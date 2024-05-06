@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { IReview } from "../interfaces/NewItemInterface.ts";
+import { IReview } from "../interfaces/NewItemInterface";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase.ts";
 import Layout from "../components/Layout.tsx";
 import { ListGroup } from "react-bootstrap";
+import { ReviewItem } from "../components/ReviewItem.tsx";
 
 const ReviewsPage = () => {
   const [list, setList] = useState<IReview[]>([]);
@@ -25,16 +26,7 @@ const ReviewsPage = () => {
       <>
         <ListGroup as="ul" className="mt-3">
           {list.map((item) => {
-            return (
-              <ListGroup.Item
-                key={item.id}
-                as="li"
-                className="d-flex align-items-center"
-              >
-                <div>{item.rating}</div>
-                <div>{item.description}</div>
-              </ListGroup.Item>
-            );
+            return <ReviewItem key={item.id} {...item} />;
           })}
         </ListGroup>
       </>

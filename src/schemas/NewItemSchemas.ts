@@ -32,6 +32,7 @@ export const NewRestaurantSchema: ZodType<INewRestaurant> = z.object({
 export const NewItemBasicSchema: ZodType<INewBasicWithPostion> = z.object({
   title: z.string().min(2).max(50),
   lat: z.number().min(-90).max(90),
+  description: z.string().min(2).max(1000),
   lng: z.number().min(-180).max(180),
   imagesUrl: z.array(z.string()).optional(),
 });
