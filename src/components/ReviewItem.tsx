@@ -5,19 +5,21 @@ export const ReviewItem = ({
   id,
   review,
   timestamp,
-  user,
-  rating,
+  comfortRating,
+  experienceRating,
+  valueRating,
 }: IReview) => {
-  const toDateTime = (secs) => {
-    var t = new Date(Date.UTC(1970, 0, 1)); // Epoch
+  const toDateTime = (secs: number) => {
+    let t = new Date(Date.UTC(1970, 0, 1)); // Epoch
     t.setUTCSeconds(secs);
     return t;
   };
   return (
-    <div className="rounded shadow-sm p-2">
+    <div className="rounded shadow-sm p-2 mb-3">
       <div className="d-flex justify-content-between">
-        <h4>{user}</h4>
-        <h4>{`${rating} stars`}</h4>
+        <h5>{`Experience: ${experienceRating} stars`}</h5>
+        <h5>{`Value fo money: ${valueRating} stars`}</h5>
+        <h5>{`Comport: ${comfortRating} stars`}</h5>
       </div>
       <div className="mb-2 mt-2">{review}</div>
       <div>{`Posted at: ${toDateTime(timestamp.seconds).toDateString()}`}</div>

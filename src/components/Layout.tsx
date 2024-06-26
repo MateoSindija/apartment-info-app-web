@@ -1,11 +1,10 @@
-import React, { ReactNode } from "react";
+import React from "react";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import BsNavbar from "react-bootstrap/Navbar";
-import NavDropdown from "react-bootstrap/NavDropdown";
 import { Button } from "react-bootstrap";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebase.ts";
+import { auth } from "../firebase";
 
 interface IProps {
   children: JSX.Element[] | JSX.Element;
@@ -27,6 +26,7 @@ const Layout = ({ children }: IProps) => {
               <Nav.Link href="/attractions">Attractions</Nav.Link>
               <Nav.Link href="/reviews">Reviews</Nav.Link>
               <Nav.Link href="/devices">Devices</Nav.Link>
+              <Nav.Link href="/aboutUs/edit">About Us</Nav.Link>
               <Button variant="secondary" onClick={() => signOut(auth)}>
                 Sign Out
               </Button>

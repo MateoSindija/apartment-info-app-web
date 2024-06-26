@@ -1,28 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Layout from "../components/Layout.tsx";
+import Layout from "../components/Layout";
 import { Button, ListGroup } from "react-bootstrap";
 import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
-import { db } from "../firebase.ts";
+import { db } from "../firebase";
 import {
   INewBasicWithPostion,
   INewBeach,
   INewDevice,
   INewRestaurant,
-} from "../interfaces/NewItemInterface.ts";
+  PossibleInterfaces,
+} from "../interfaces/NewItemInterface";
 import { deleteObject, getStorage, ref } from "@firebase/storage";
-import { date } from "zod";
 
 interface IProps {
   type: string;
   urlType: string;
 }
-
-type PossibleInterfaces =
-  | INewBeach
-  | INewRestaurant
-  | INewBasicWithPostion
-  | INewDevice;
 
 const ListPage = ({ type, urlType }: IProps) => {
   const navigate = useNavigate();
@@ -49,10 +43,14 @@ const ListPage = ({ type, urlType }: IProps) => {
     getData();
   }, []);
 
-  const handleDelete = async (id: string, imagesUrl: string[]) => {
-    imagesUrl.forEach(async (imageUrl) => {
-      await deleteObject(ref(getStorage(), imageUrl));
-    });
+  const handleDelete = async (id: string, imagesUrl: string[] | string) => {
+    if (typeof imagesUrl !== "string") {
+      imagesUrl.forEach(async (imageUrl) => {
+        await deleteObject(ref(getStorage(), imageUrl));
+      });
+    } else {
+      await deleteObject(ref(getStorage(), imagesUrl));
+    }
     await deleteDoc(doc(db, type, id));
     getData();
   };
@@ -76,9 +74,20 @@ const ListPage = ({ type, urlType }: IProps) => {
                 <div>{item.title}</div>
                 <div className="ms-auto">
                   <Button
+                    variant="primary me-2"
+                    href={`/${type.toLowerCase()}/edit/${item.id}`}
+                  >
+                    Edit
+                  </Button>
+                  <Button
                     variant="danger"
                     onClick={() =>
-                      handleDelete(item.id ?? "", item.imagesUrl ?? [])
+                      handleDelete(
+                        item.id ?? "",
+                        "imagesUrl" in item
+                          ? item.imagesUrl ?? []
+                          : item?.titleImage?.toString() ?? "",
+                      )
                     }
                   >
                     Delete

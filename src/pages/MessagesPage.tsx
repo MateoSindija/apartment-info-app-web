@@ -1,20 +1,17 @@
-import React, { useEffect, useState } from "react";
-import Navbar from "../components/Layout.tsx";
-import Layout from "../components/Layout.tsx";
-import { Button, Container, Form } from "react-bootstrap";
-import { IReview } from "../interfaces/NewItemInterface.ts";
-import { IMessage, IMessages } from "../interfaces/MessagesInterface.ts";
+import { useEffect, useState } from "react";
+
+import Layout from "../components/Layout";
+import { Button, Form } from "react-bootstrap";
+import { IMessage, IMessages } from "../interfaces/MessagesInterface";
 import {
   addDoc,
   collection,
-  doc,
-  getDoc,
   getDocs,
   orderBy,
   query,
 } from "firebase/firestore";
-import { db } from "../firebase.ts";
-import Message from "../components/Message.tsx";
+import { db } from "../firebase";
+import Message from "../components/Message";
 
 const MessagesPage = () => {
   const [messages, setMessages] = useState<IMessages>({ allMessages: [] });
@@ -24,13 +21,13 @@ const MessagesPage = () => {
     db,
     "Messages",
     "OwnerMessages",
-    "Messages"
+    "Messages",
   );
   const collectionRefUser = collection(
     db,
     "Messages",
     "UserMessages",
-    "Messages"
+    "Messages",
   );
   const getData = async () => {
     const queryOwner = query(collectionRefOwner, orderBy("timestamp", "desc"));
@@ -55,7 +52,7 @@ const MessagesPage = () => {
     const mergedMessages = [...newUserMessages, ...newOwnerMessages];
 
     mergedMessages.sort(
-      (a: IMessage, b: IMessage) => a.timestamp - b.timestamp
+      (a: IMessage, b: IMessage) => a.timestamp.seconds - b.timestamp.seconds,
     );
 
     setMessages({ allMessages: mergedMessages });
