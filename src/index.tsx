@@ -1,14 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "./index.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import SignInPage from "./pages/SignInPage";
+import SignInPage from "@/pages/SignInPage";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import NewItemPage from "./pages/NewItemPage";
 import ListPage from "./pages/ListPage";
 import MessagesPage from "./pages/MessagesPage";
 import ReviewsPage from "./pages/ReviewsPage";
+import { Provider } from "react-redux";
+import { persistor, store } from "./redux/store";
+import { PersistGate } from "redux-persist/integration/react";
+import "@/styles/index.scss";
 
 const router = createBrowserRouter([
   {
@@ -100,6 +103,10 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <RouterProvider router={router} />
+      </PersistGate>
+    </Provider>
   </React.StrictMode>,
 );

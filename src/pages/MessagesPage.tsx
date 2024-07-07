@@ -10,44 +10,25 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
-import { db } from "../firebase";
 import Message from "../components/Message";
 
 const MessagesPage = () => {
   const [messages, setMessages] = useState<IMessages>({ allMessages: [] });
   const [newMessage, setNewMessage] = useState("");
 
-  const collectionRefOwner = collection(
-    db,
-    "Messages",
-    "OwnerMessages",
-    "Messages",
-  );
-  const collectionRefUser = collection(
-    db,
-    "Messages",
-    "UserMessages",
-    "Messages",
-  );
   const getData = async () => {
-    const queryOwner = query(collectionRefOwner, orderBy("timestamp", "desc"));
-    const querySnapshotOwner = await getDocs(queryOwner);
-
-    const queryUser = query(collectionRefUser, orderBy("timestamp", "desc"));
-    const querySnapshotUser = await getDocs(queryUser);
-
     const newUserMessages: IMessage[] = [];
     const newOwnerMessages: IMessage[] = [];
 
-    querySnapshotUser.docs.forEach((doc) => {
-      const data = doc.data() as IMessage;
-      newUserMessages.push({ ...data, id: doc.id, type: "user" });
-    });
-
-    querySnapshotOwner.docs.forEach((doc) => {
-      const data = doc.data() as IMessage;
-      newOwnerMessages.push({ ...data, id: doc.id, type: "owner" });
-    });
+    // querySnapshotUser.docs.forEach((doc) => {
+    //   const data = doc.data() as IMessage;
+    //   newUserMessages.push({ ...data, id: doc.id, type: "user" });
+    // });
+    //
+    // querySnapshotOwner.docs.forEach((doc) => {
+    //   const data = doc.data() as IMessage;
+    //   newOwnerMessages.push({ ...data, id: doc.id, type: "owner" });
+    // });
 
     const mergedMessages = [...newUserMessages, ...newOwnerMessages];
 
@@ -64,10 +45,10 @@ const MessagesPage = () => {
   const sendMessage = async (event: React.FormEvent) => {
     event.preventDefault();
     if (newMessage.length === 0) return;
-    await addDoc(collectionRefOwner, {
-      message: newMessage,
-      timestamp: new Date(),
-    });
+    // await addDoc(collectionRefOwner, {
+    //   message: newMessage,
+    //   timestamp: new Date(),
+    // });
     setNewMessage("");
     await getData();
   };

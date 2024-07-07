@@ -1,0 +1,32 @@
+.layout {
+  display: flex;
+  height: 100vh;
+  &__sidebar {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 250px;
+    background-color: white;
+    padding: 20px;
+    margin-right: 20px;
+
+    &__item {
+      text-decoration: none;
+      color: $regent-grey;
+      &:hover {
+        background-color: $gray-300;
+      }
+      svg {
+        margin-right: 10px;
+      }
+
+      width: 100%;
+      padding: 10px 30px;
+    }
+  }
+
+  .main-content {
+    flex-grow: 1;
+    padding: 20px;
+  }
+}

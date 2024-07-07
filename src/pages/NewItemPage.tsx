@@ -32,11 +32,10 @@ import {
   getDoc,
   updateDoc,
 } from "firebase/firestore";
-import { db } from "../firebase";
 import { GoogleMap, MarkerF, useLoadScript } from "@react-google-maps/api";
 import { useLocation, useParams } from "react-router-dom";
-import { IAboutUs } from "../interfaces/AboutUsInterface";
-import { AboutUsSchema } from "../schemas/AboutUsSchema";
+import { IAboutUs } from "@/interfaces/AboutUsInterface";
+import { AboutUsSchema } from "@/schemas/AboutUsSchema";
 
 interface IProps {
   type: "beach" | "attraction" | "restaurant" | "shop" | "device" | "aboutUs";
@@ -137,14 +136,14 @@ const NewItemPage = ({ type }: IProps) => {
 
   const getDocData = async () => {
     if (type !== "aboutUs" && !params.id) return;
-    const docRef = doc(db, transformToPlural(type), params?.id ?? "aboutUs");
-    const docSnap = await getDoc(docRef);
-    const docData = docSnap.data() as PossibleInterfaces;
-    if ("imagesUrl" in docData) {
-      setDocImgUrls(docData.imagesUrl);
-    }
-    setData({ ...docData, id: docSnap.id });
-    reset(getDefaultValues(docData));
+    // const docRef = doc(db, transformToPlural(type), params?.id ?? "aboutUs");
+    // const docSnap = await getDoc(docRef);
+    // const docData = docSnap.data() as PossibleInterfaces;
+    // if ("imagesUrl" in docData) {
+    //   setDocImgUrls(docData.imagesUrl);
+    // }
+    // setData({ ...docData, id: docSnap.id });
+    // reset(getDefaultValues(docData));
   };
   console.log(errors);
   const imagesUpload = async (images: File[]): Promise<string[]> => {
@@ -301,8 +300,8 @@ const NewItemPage = ({ type }: IProps) => {
 
   const deleteImageFromStorage = async (imgUrl: string) => {
     setDocImgUrls((prevState) => prevState?.filter((url) => url !== imgUrl));
-    const docRef = doc(db, transformToPlural(type), params?.id ?? "");
-    await updateDoc(docRef, { imagesUrl: arrayRemove(imgUrl) });
+    // const docRef = doc(db, transformToPlural(type), params?.id ?? "");
+    // await updateDoc(docRef, { imagesUrl: arrayRemove(imgUrl) });
     await deleteObject(ref(getStorage(), imgUrl));
   };
 
@@ -320,8 +319,8 @@ const NewItemPage = ({ type }: IProps) => {
       if (files?.length) {
         filesUrl = await imagesUpload(files);
       }
-      const docRef = doc(db, transformToPlural(type), params?.id ?? "aboutUs");
-      await updateDoc(docRef, newDocFields(updatedData, filesUrl));
+      // const docRef = doc(db, transformToPlural(type), params?.id ?? "aboutUs");
+      // await updateDoc(docRef, newDocFields(updatedData, filesUrl));
     } catch (e) {
       console.log(e);
     }
@@ -341,10 +340,10 @@ const NewItemPage = ({ type }: IProps) => {
       if (files?.length) {
         filesUrl = await imagesUpload(files);
       }
-      await addDoc(
-        collection(db, transformToPlural(type)),
-        newDocFields(data, filesUrl),
-      );
+      // await addDoc(
+      //   // collection(db, transformToPlural(type)),
+      //   newDocFields(data, filesUrl),
+      // );
     } catch (e) {
       console.log(e);
     }

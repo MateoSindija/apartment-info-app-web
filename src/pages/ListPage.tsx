@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { Button, ListGroup } from "react-bootstrap";
 import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
 import {
   INewBasicWithPostion,
   INewBeach,
@@ -23,20 +22,20 @@ const ListPage = ({ type, urlType }: IProps) => {
   const [list, setList] = useState<PossibleInterfaces[]>([]);
   const getData = async () => {
     let newData: PossibleInterfaces[] = [];
-    const querySnapshot = await getDocs(collection(db, type));
-    querySnapshot.forEach((doc) => {
-      const data = doc.data() as PossibleInterfaces;
-
-      if ("terrainType" in data) {
-        newData.push({ ...(data as INewBeach), id: doc.id });
-      } else if ("review" in data) {
-        newData.push({ ...(data as INewRestaurant), id: doc.id });
-      } else if ("lat" in data) {
-        newData.push({ ...(data as INewBasicWithPostion), id: doc.id });
-      } else if ("title" in data) {
-        newData.push({ ...(data as INewDevice), id: doc.id });
-      }
-    });
+    // const querySnapshot = await getDocs(collection(db, type));
+    // querySnapshot.forEach((doc) => {
+    //   const data = doc.data() as PossibleInterfaces;
+    //
+    //   if ("terrainType" in data) {
+    //     newData.push({ ...(data as INewBeach), id: doc.id });
+    //   } else if ("review" in data) {
+    //     newData.push({ ...(data as INewRestaurant), id: doc.id });
+    //   } else if ("lat" in data) {
+    //     newData.push({ ...(data as INewBasicWithPostion), id: doc.id });
+    //   } else if ("title" in data) {
+    //     newData.push({ ...(data as INewDevice), id: doc.id });
+    //   }
+    // });
     setList(newData);
   };
   useEffect(() => {
@@ -51,7 +50,7 @@ const ListPage = ({ type, urlType }: IProps) => {
     } else {
       await deleteObject(ref(getStorage(), imagesUrl));
     }
-    await deleteDoc(doc(db, type, id));
+    // await deleteDoc(doc(db, type, id));
     getData();
   };
 
