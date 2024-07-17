@@ -12,6 +12,8 @@ import { Provider } from "react-redux";
 import { persistor, store } from "./redux/store";
 import { PersistGate } from "redux-persist/integration/react";
 import "@/styles/index.scss";
+import SignUpPage from "@/pages/SignUpPage";
+import ApartmentSelectPage from "@/pages/ApartmentSelectPage";
 
 const router = createBrowserRouter([
   {
@@ -19,80 +21,88 @@ const router = createBrowserRouter([
     element: <SignInPage />,
   },
   {
+    path: "/sign-up",
+    element: <SignUpPage />,
+  },
+  {
     element: <ProtectedRoutes />,
     children: [
       {
-        path: "/beaches",
-        element: <ListPage urlType="beaches" type="Beaches" />,
+        path: "/:apartmentId/beaches",
+        element: <ListPage type="beaches" />,
       },
       {
-        path: "/messages",
+        path: "/apartment-select",
+        element: <ApartmentSelectPage />,
+      },
+      {
+        path: "/:apartmentId/messages",
         element: <MessagesPage />,
       },
       {
-        path: "/restaurants",
-        element: <ListPage urlType="restaurants" type="Restaurants" />,
+        path: "/:apartmentId/restaurants",
+        element: <ListPage type="restaurants" />,
       },
       {
-        path: "/shops",
-        element: <ListPage urlType="shops" type="Shops" />,
+        path: "/:apartmentId/shops",
+        element: <ListPage type="shops" />,
       },
       {
-        path: "/attractions",
-        element: <ListPage urlType="attractions" type="Attractions" />,
+        path: "/:apartmentId/sights",
+        element: <ListPage type="sights" />,
       },
       {
-        path: "/devices",
-        element: <ListPage urlType="devices" type="Devices" />,
+        path: "/:apartmentId/devices",
+        element: <ListPage type="devices" />,
       },
       {
-        path: "/reviews",
+        path: "/:apartmentId/reviews",
         element: <ReviewsPage />,
       },
       {
-        path: "/beaches/new",
-        element: <NewItemPage type="beach" />,
+        path: "/:apartmentId/beaches/new",
+        element: <NewItemPage type="beaches" />,
       },
       {
-        path: "/beaches/edit/:id",
-        element: <NewItemPage type="beach" />,
+        path: "/:apartmentId/beaches/edit/:id",
+        element: <NewItemPage type="beaches" />,
       },
       {
-        path: "/restaurants/new",
-        element: <NewItemPage type="restaurant" />,
+        path: "/:apartmentId/restaurants/new",
+        element: <NewItemPage type="restaurants" />,
       },
       {
-        path: "/restaurants/edit/:id",
-        element: <NewItemPage type="restaurant" />,
+        path: "/:apartmentId/restaurants/edit/:id",
+        element: <NewItemPage type="restaurants" />,
       },
       {
-        path: "/shops/new",
-        element: <NewItemPage type="shop" />,
+        path: "/:apartmentId/shops/new",
+        element: <NewItemPage type="shops" />,
       },
       {
-        path: "/shops/edit/:id",
-        element: <NewItemPage type="shop" />,
+        path: "/:apartmentId/shops/edit/:id",
+        element: <NewItemPage type="shops" />,
       },
       {
-        path: "/attractions/new",
-        element: <NewItemPage type="attraction" />,
+        path: "/:apartmentId/sights/new",
+        element: <NewItemPage type="sights" />,
       },
       {
-        path: "/attractions/edit/:id",
-        element: <NewItemPage type="attraction" />,
+        path: "/:apartmentId/sights/edit/:id",
+        element: <NewItemPage type="sights" />,
       },
       {
-        path: "/devices/new",
-        element: <NewItemPage type="device" />,
+        path: "/:apartmentId/devices/new",
+        element: <NewItemPage type="devices" />,
       },
 
       {
-        path: "/devices/edit/:id",
-        element: <NewItemPage type="device" />,
+        path: "/:apartmentId/devices/edit/:id",
+        element: <NewItemPage type="devices" />,
       },
       {
-        path: "/aboutUs/edit",
-        element: <NewItemPage type="aboutUs" />,
+        path: "/:apartmentId/aboutUs/edit",
+        element: <NewItemPage type="about us" />,
       },
     ],
   },

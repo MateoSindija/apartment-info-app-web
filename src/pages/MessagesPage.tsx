@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import Layout from "../components/Layout";
+import Sidebar from "../layout/Sidebar";
 import { Button, Form } from "react-bootstrap";
 import { IMessage, IMessages } from "../interfaces/MessagesInterface";
 import {
@@ -54,7 +54,7 @@ const MessagesPage = () => {
   };
 
   return (
-    <Layout>
+    <Sidebar>
       <div className="mb-2">Messages</div>
       <div
         className="w-100 mb-3 p-2"
@@ -71,7 +71,7 @@ const MessagesPage = () => {
         />
         <Button type="submit">Send</Button>
       </Form>
-    </Layout>
+    </Sidebar>
   );
 };
 

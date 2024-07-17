@@ -2,7 +2,7 @@ import React from "react";
 import { ISignIn } from "@/interfaces/AuthInterfaces";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import SignInSchema from "@/schemas/SignInSchema";
+import { SignInSchema } from "@/schemas/AuthSchema";
 import { useNavigate } from "react-router-dom";
 import { login } from "@/redux/auth";
 import { useAppDispatch } from "@/redux/store";
@@ -24,7 +24,7 @@ const SignIn = () => {
       .unwrap()
       .then((result: any) => {
         dispatch(setUserData(result));
-        navigate("/beaches");
+        navigate("/apartment-select");
       })
       .catch((error) => {
         setError("root", { message: "Wrong email or password" });
@@ -40,7 +40,11 @@ const SignIn = () => {
       <label htmlFor="password">Password</label>
       <input type="password" id={"password"} {...register("password")} />
       {errors.root && <div>{errors.root.message}</div>}
-      <button type={"submit"}>Login</button>
+      <button type={"submit"}>Sign in</button>
+      <div className={"signInForm__signUp"}>
+        Not a member?
+        <a href="/sign-up">Sign up</a>
+      </div>
     </form>
   );
 };

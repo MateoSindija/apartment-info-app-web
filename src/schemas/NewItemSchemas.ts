@@ -5,6 +5,7 @@ import {
   INewDevice,
   INewRestaurant,
 } from "../interfaces/NewItemInterface";
+import { IApartment, INewApartment } from "@/interfaces/ApartmentIntefaces";
 
 const NumberOrString = z.union([
   z.string(), // allows strings
@@ -51,4 +52,11 @@ export const NewDeviceSchema: ZodType<INewDevice> = z.object({
   title: z.string().min(2).max(20),
   description: z.string().min(2).max(1000),
   titleImage: NumberOrString,
+});
+
+export const NewApartmentSchema: ZodType<INewApartment> = z.object({
+  name: z.string().min(2).max(100),
+  address: z.string().min(2).max(200),
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-90).max(90),
 });

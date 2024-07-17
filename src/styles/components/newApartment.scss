@@ -1,0 +1,48 @@
+.newApartment {
+  display: flex;
+  flex-direction: column;
+  width: 550px;
+
+  input {
+    @include input;
+    margin-bottom: 20px;
+  }
+
+  &__info {
+    display: flex;
+    justify-content: center;
+    color: $gray-500;
+    margin: 20px 0;
+    position: relative;
+  }
+
+  label {
+    margin-bottom: 10px;
+    font-size: 15px;
+  }
+
+  &__buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+
+    &__cancel {
+      padding: 10px 20px;
+      color: white;
+      margin-right: 15px;
+      @include button(red);
+    }
+    &__submit {
+      padding: 10px 20px;
+      color: white;
+
+      @include button(blue);
+    }
+  }
+
+  &__header {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+}

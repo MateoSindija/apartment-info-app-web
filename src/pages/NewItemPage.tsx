@@ -1,11 +1,22 @@
-import React, { useEffect, useState } from "react";
-import Layout from "../components/Layout";
-import { Button, Form, ProgressBar } from "react-bootstrap";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import Sidebar from "../layout/Sidebar";
+import { Button, Form, ProgressBar, Toast } from "react-bootstrap";
 import {
+  IBasic,
+  IBeach,
+  IDevice,
   INewBasicWithPostion,
   INewBeach,
   INewDevice,
   INewRestaurant,
+  IRestaurant,
+  ISight,
 } from "../interfaces/NewItemInterface";
 import { useForm } from "react-hook-form";
 import {
@@ -36,83 +47,217 @@ import { GoogleMap, MarkerF, useLoadScript } from "@react-google-maps/api";
 import { useLocation, useParams } from "react-router-dom";
 import { IAboutUs } from "@/interfaces/AboutUsInterface";
 import { AboutUsSchema } from "@/schemas/AboutUsSchema";
+import { FaCheck, FaPlus } from "react-icons/fa6";
+import { useDropzone } from "react-dropzone";
+import { RiImageAddFill } from "react-icons/ri";
+import {
+  useAddBeachMutation,
+  useAddDeviceMutation,
+  useAddRestaurantMutation,
+  useAddShopMutation,
+  useAddSightMutation,
+  useGetAboutUsInfoQuery,
+  useGetBeachInfoQuery,
+  useGetDeviceInfoQuery,
+  useGetRestaurantInfoQuery,
+  useGetShopInfoQuery,
+  useGetSightInfoQuery,
+} from "@/api/api";
+import accept from "attr-accept";
+import { UseQueryHookResult } from "@reduxjs/toolkit/src/query/react/buildHooks";
+import { QueryReturnValue } from "@reduxjs/toolkit/src/query/baseQueryTypes";
+import { formatImageUrl } from "@/utils/functions";
 
 interface IProps {
-  type: "beach" | "attraction" | "restaurant" | "shop" | "device" | "aboutUs";
+  type: "devices" | "sights" | "shops" | "restaurants" | "beaches" | "about us";
 }
 
 type PossibleInterfaces =
-  | INewBasicWithPostion
+  | IDevice
+  | IBeach
+  | IRestaurant
+  | ISight
+  | IAboutUs
+  | IBasic;
+
+type PossibleNewInterfaces =
+  | INewDevice
   | INewBeach
   | INewRestaurant
-  | INewDevice
+  | INewBasicWithPostion
   | IAboutUs;
+
+const ICON_SIZE = 50;
+const ICON_COLOR = "#adb5bd";
+
+const newDocFields = (
+  docData: PossibleNewInterfaces,
+  files: File[],
+  apartmentId: string,
+) => {
+  const formData = new FormData();
+
+  if ("title" in docData) {
+    formData.append("title", docData.title);
+  }
+  if ("lat" in docData) {
+    formData.append("lat", docData.lat.toString());
+    formData.append("lng", docData.lng.toString());
+  }
+  if ("description" in docData) {
+    formData.append("description", docData.description);
+  }
+  if ("terrainType" in docData) {
+    formData.append("terrainType", docData.terrainType);
+  }
+
+  if ("moto" in docData) {
+    formData.append("moto", docData.moto);
+  }
+
+  if ("aboutUs" in docData) {
+    formData.append("aboutUs", docData.aboutUs);
+  }
+
+  if ("review" in docData) {
+    formData.append("review", docData.review.toString());
+  }
+  if ("reviewAmount" in docData) {
+    formData.append("reviewAmount", docData.reviewAmount.toString());
+  }
+  if ("contacts" in docData) {
+    formData.append("emailContact", docData.contacts.email);
+    formData.append("phoneContact", docData.contacts.number);
+  }
+
+  formData.append("titleImage", docData.titleImage?.toString() ?? "0");
+  formData.append("apartmentId", apartmentId);
+
+  files.forEach((file) => {
+    formData.append("images", file);
+  });
+
+  return formData;
+};
 
 const NewItemPage = ({ type }: IProps) => {
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAP_KEY ?? "",
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAP_KEY ?? "",
   });
-  const [data, setData] = useState<PossibleInterfaces | undefined>();
+  const formRef = useRef(null);
+  const [data, setData] = useState<PossibleNewInterfaces>();
   const [files, setFiles] = useState<File[] | undefined>();
   const [docImgUrls, setDocImgUrls] = useState<string[] | undefined>();
-  const [progress, setProgress] = useState(0);
-  const params = useParams<{ id: string | undefined }>();
   const url = useLocation();
+  const { id, apartmentId } = useParams();
+
+  const handleData = (type: IProps["type"], id: string) => {
+    switch (type) {
+      case "beaches":
+        return useGetBeachInfoQuery(id);
+      case "restaurants":
+        return useGetRestaurantInfoQuery(id);
+      case "devices":
+        return useGetDeviceInfoQuery(id);
+      case "sights":
+        return useGetSightInfoQuery(id);
+      case "shops":
+        return useGetShopInfoQuery(id);
+      case "about us":
+        return useGetAboutUsInfoQuery(id);
+    }
+  };
+  const { data: editData } = id ? handleData(type, id) : { data: undefined };
 
   useEffect(() => {
-    getDocData();
-  }, []);
-  const getDefaultValues = (
-    data: PossibleInterfaces | undefined,
-  ): Partial<PossibleInterfaces> => {
-    if (!data)
-      return {
-        terrainType: "gravel",
-        lat: 45.3271,
-        lng: 14.4422,
-      };
-    if ("terrainType" in data) {
-      return {
-        title: data.title,
-        lat: data.lat,
-        lng: data.lng,
-        description: data.description,
-        terrainType: data.terrainType,
-        titleImage: data.titleImage,
-      } as INewBeach;
-    } else if ("review" in data) {
-      return {
-        title: data.title,
-        lat: data.lat,
-        lng: data.lng,
-        description: data.description,
-        review: data.review,
-        reviewAmount: data.reviewAmount,
-        contacts: data.contacts,
-        titleImage: data.titleImage,
-      } as INewRestaurant;
-    } else if ("lat" in data) {
-      return {
-        title: data.title,
-        lat: data.lat,
-        lng: data.lng,
-        description: data.description,
-        titleImage: data.titleImage,
-      } as INewBasicWithPostion;
-    } else if ("title" in data) {
-      return {
-        title: data.title,
-        description: data.description,
-        titleImage: data.titleImage,
-      } as INewDevice;
-    } else if ("aboutUs" in data) {
-      return {
-        aboutUs: data.aboutUs,
-        moto: data.moto,
-      };
+    if (id && !url.pathname.includes("new") && editData) {
+      setDocImgUrls(editData.imagesUrl ?? []);
+      setData(editData);
+      getDefaultValues(editData);
     }
-    return {};
+  }, [url, editData]);
+
+  const handleAddItem = (type: IProps["type"]) => {
+    switch (type) {
+      case "about us":
+        return useAddBeachMutation();
+      case "sights":
+        return useAddSightMutation();
+      case "beaches":
+        return useAddBeachMutation();
+      case "devices":
+        return useAddDeviceMutation();
+      case "restaurants":
+        return useAddRestaurantMutation();
+      case "shops":
+        return useAddShopMutation();
+    }
   };
+
+  const [addItem, { isLoading }] = handleAddItem(type);
+
+  const getDefaultValues = (data: PossibleInterfaces | undefined) => {
+    if (!data) {
+      setValue("terrainType", "gravel");
+      setValue("lat", 45.3271);
+      setValue("lng", 14.4422);
+      return;
+    }
+    console.log(data);
+
+    if ("terrainType" in data) {
+      setValue("title", data.title);
+      setValue("description", data.description);
+      setValue("titleImage", data.titleImage);
+      setValue("lat", data.location.coordinates[1]);
+      setValue("lng", data.location.coordinates[0]);
+      setValue("terrainType", data.terrainType);
+    } else if ("review" in data) {
+      setValue("title", data.title);
+      setValue("description", data.description);
+      setValue("titleImage", data.titleImage);
+      setValue("lat", data.location.coordinates[1]);
+      setValue("lng", data.location.coordinates[0]);
+      setValue("contacts.email", data.emailContact);
+      setValue("contacts.number", data.phoneContact);
+      setValue("reviewAmount", data.reviewAmount);
+      setValue("review", data.review);
+    } else if ("location" in data) {
+      setValue("title", data.title);
+      setValue("description", data.description);
+      setValue("titleImage", data.titleImage);
+      setValue("lat", data.location.coordinates[1]);
+      setValue("lng", data.location.coordinates[0]);
+    } else if ("title" in data) {
+      setValue("title", data.title);
+      setValue("description", data.description);
+      setValue("titleImage", data.titleImage);
+    } else if ("aboutUs" in data) {
+      setValue("aboutUs", data.aboutUs);
+      setValue("moto", data.moto);
+    }
+  };
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const images = filterImageFiles(acceptedFiles);
+    if (images.length) {
+      if (images.length === 0) {
+        if (images[0]) {
+          setFiles([images[0]]);
+          setValue("titleImage", 0);
+        }
+      } else {
+        setFiles([...images]);
+      }
+    }
+  }, []);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    maxFiles: 20,
+    accept: {
+      "image/*": [".jpeg", ".png", ".webp"],
+    },
+  });
 
   const {
     register,
@@ -124,108 +269,41 @@ const NewItemPage = ({ type }: IProps) => {
     reset,
     getValues,
     clearErrors,
-  } = useForm<PossibleInterfaces>({
+  } = useForm<PossibleNewInterfaces>({
     resolver: zodResolver(handleSchemaType() as ZodType<any, any, any>),
-    defaultValues: getDefaultValues(undefined),
+    // defaultValues: getDefaultValues(editData),
   });
 
   const textareaRegisterProps =
-    type !== "aboutUs" ? register("description") : register("aboutUs");
+    type !== "about us" ? register("description") : register("aboutUs");
   const titleRegisterProps =
-    type !== "aboutUs" ? register("title") : register("moto");
-
-  const getDocData = async () => {
-    if (type !== "aboutUs" && !params.id) return;
-    // const docRef = doc(db, transformToPlural(type), params?.id ?? "aboutUs");
-    // const docSnap = await getDoc(docRef);
-    // const docData = docSnap.data() as PossibleInterfaces;
-    // if ("imagesUrl" in docData) {
-    //   setDocImgUrls(docData.imagesUrl);
-    // }
-    // setData({ ...docData, id: docSnap.id });
-    // reset(getDefaultValues(docData));
-  };
-  console.log(errors);
-  const imagesUpload = async (images: File[]): Promise<string[]> => {
-    let urlArray: string[] = [];
-
-    return new Promise((resolve, reject) => {
-      images.map((image) => {
-        const storageRef = ref(
-          getStorage(),
-          `images/${type}/${image.name + Math.random()}`,
-        );
-        const uploadTask = uploadBytesResumable(storageRef, image);
-
-        uploadTask.on(
-          "state_changed",
-          (snap) => {
-            let percentage = (snap.bytesTransferred / snap.totalBytes) * 100;
-            setProgress(percentage);
-          },
-          (err) => {
-            reject(false);
-          },
-          async () => {
-            const url = await getDownloadURL(uploadTask.snapshot.ref);
-            urlArray.push(url);
-
-            if (urlArray.length === images.length) {
-              resolve(urlArray);
-            }
-          },
-        );
-        return null;
-      });
-    });
-  };
+    type !== "about us" ? register("title") : register("moto");
 
   function handleSchemaType() {
     switch (type) {
-      case "beach":
+      case "beaches":
         return NewBeachSchema;
-      case "restaurant":
+      case "restaurants":
         return NewRestaurantSchema;
-      case "shop":
+      case "shops":
         return NewItemBasicSchema;
-      case "attraction":
+      case "sights":
         return NewItemBasicSchema;
-      case "device":
+      case "devices":
         return NewDeviceSchema;
-      case "aboutUs":
+      case "about us":
         return AboutUsSchema;
       default:
         return NewRestaurantSchema;
     }
   }
 
-  const transformToPlural = (
-    type: "beach" | "attraction" | "restaurant" | "shop" | "device" | "aboutUs",
-  ) => {
-    switch (type) {
-      case "beach":
-        return "Beaches";
-      case "restaurant":
-        return "Restaurants";
-      case "shop":
-        return "Shops";
-      case "attraction":
-        return "Attractions";
-      case "device":
-        return "Devices";
-      case "aboutUs":
-        return "AboutUs";
-      default:
-        return "Beaches";
-    }
-  };
-
-  function filterImageFiles(fileList: FileList | null): File[] {
+  function filterImageFiles(fileArray: File[] | null): File[] {
     const imageFiles: File[] = [];
 
-    if (fileList?.length) {
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList.item(i);
+    if (fileArray?.length) {
+      for (let i = 0; i < fileArray.length; i++) {
+        const file = fileArray[i];
 
         if (file && file.type.startsWith("image/")) {
           imageFiles.push(file);
@@ -235,81 +313,16 @@ const NewItemPage = ({ type }: IProps) => {
     return imageFiles;
   }
 
-  const handleTitleImage = (
-    urlArray: string[],
-    titleImage: string | number,
-  ) => {
-    const parsedTitleImage = parseInt(titleImage.toString());
-
-    if (!isNaN(parsedTitleImage)) {
-      if (parsedTitleImage < 0) return urlArray[0];
-      return urlArray[parsedTitleImage];
-    }
-    return titleImage;
-  };
-
-  const handleFileUpload = (
-    amount: string,
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const images = filterImageFiles(event.currentTarget.files);
-    if (images.length) {
-      if (amount === "single") {
-        if (images[0]) {
-          setFiles([images[0]]);
-          setValue("titleImage", 0);
-        }
-      } else {
-        setFiles([...images]);
-      }
-    }
-  };
-
-  const newDocFields = (
-    docData: PossibleInterfaces,
-    filesUrl: string[] | undefined,
-  ) => {
-    return {
-      ...("title" in docData && { title: docData.title }),
-      ...(!("moto" in docData) && {
-        titleImage: handleTitleImage(filesUrl ?? [], docData.titleImage ?? ""),
-      }),
-      ...(filesUrl?.length && { imagesUrl: arrayUnion(...filesUrl) }),
-      ...("lat" in docData && { lat: docData.lat }),
-      ...("lng" in docData && { lng: docData.lng }),
-      ...("description" in docData && {
-        description: docData.description,
-      }),
-      ...("terrainType" in docData && {
-        terrainType: docData.terrainType,
-      }),
-      ...("moto" in docData && { moto: docData.moto }),
-      ...("aboutUs" in docData && { aboutUs: docData.aboutUs }),
-      ...("review" in docData && { review: docData.review }),
-      ...("reviewAmount" in docData && {
-        reviewAmount: docData.reviewAmount,
-      }),
-      ...("contacts" in docData && {
-        contacts: {
-          email: docData.contacts.email,
-          number: docData.contacts.number,
-        },
-      }),
-    };
-  };
-
   const deleteImageFromStorage = async (imgUrl: string) => {
     setDocImgUrls((prevState) => prevState?.filter((url) => url !== imgUrl));
-    // const docRef = doc(db, transformToPlural(type), params?.id ?? "");
-    // await updateDoc(docRef, { imagesUrl: arrayRemove(imgUrl) });
-    await deleteObject(ref(getStorage(), imgUrl));
   };
 
-  const updateItem = async (updatedData: PossibleInterfaces) => {
+  const updateItem = async (updatedData: PossibleNewInterfaces) => {
     clearErrors();
 
-    if (type !== "aboutUs" && getValues("titleImage") === undefined) return;
-    if (type !== "aboutUs" && files === undefined && docImgUrls === undefined) {
+    if (!id) return;
+    if (getValues("titleImage") === undefined) return;
+    if (files === undefined && docImgUrls === undefined) {
       setError("root", { message: "Upload at least one image" });
       return;
     }
@@ -317,7 +330,7 @@ const NewItemPage = ({ type }: IProps) => {
     try {
       let filesUrl: string[] | undefined = undefined;
       if (files?.length) {
-        filesUrl = await imagesUpload(files);
+        // filesUrl = await imagesUpload(files);
       }
       // const docRef = doc(db, transformToPlural(type), params?.id ?? "aboutUs");
       // await updateDoc(docRef, newDocFields(updatedData, filesUrl));
@@ -326,24 +339,18 @@ const NewItemPage = ({ type }: IProps) => {
     }
   };
 
-  const addNewItem = async (data: PossibleInterfaces) => {
+  const addNewItem = async (data: PossibleNewInterfaces) => {
     clearErrors();
 
-    if (type !== "aboutUs" && getValues("titleImage") === undefined) return;
-    if (type !== "aboutUs" && files === undefined) {
+    if (!apartmentId) return;
+    if (getValues("titleImage") === undefined) return;
+    if (!files) {
       setError("root", { message: "Upload at least one image" });
       return;
     }
 
     try {
-      let filesUrl: string[] | undefined;
-      if (files?.length) {
-        filesUrl = await imagesUpload(files);
-      }
-      // await addDoc(
-      //   // collection(db, transformToPlural(type)),
-      //   newDocFields(data, filesUrl),
-      // );
+      await addItem(newDocFields(data, files, apartmentId));
     } catch (e) {
       console.log(e);
     }
@@ -362,242 +369,285 @@ const NewItemPage = ({ type }: IProps) => {
   };
 
   return (
-    <Layout>
-      <Form onSubmit={handleSubmit(isEditPage() ? updateItem : addNewItem)}>
-        <Form.Group className="mb-3" controlId="formBasicEmail">
-          <Form.Label>{type !== "aboutUs" ? "Title" : "Moto"}</Form.Label>
-          <Form.Control
-            disabled={isSubmitting}
-            placeholder={
-              type !== "aboutUs" ? "Enter title" : "Enter you company moto"
-            }
-            {...titleRegisterProps}
-          />
-          {"title" in errors && errors.title?.message && (
-            <div className="text-danger">{errors.title.message}</div>
-          )}
-          {"moto" in errors && errors.moto?.message && (
-            <div className="text-danger">{errors.moto.message}</div>
-          )}
-        </Form.Group>
-
-        {type === "beach" && (
-          <Form.Group className="mb-3">
-            <Form.Label>Terrain type</Form.Label>
-            <Form.Select disabled={isSubmitting} {...register("terrainType")}>
-              <option value="gravel">Gravel</option>
-              <option value="sand">Sand</option>
-            </Form.Select>
-            {"terrainType" in errors && errors.terrainType?.message && (
-              <div className="text-danger">{errors.terrainType.message}</div>
-            )}
-          </Form.Group>
+    <Sidebar>
+      <div className={"pageHeader"}>
+        <div className={"pageHeader__title"}>
+          {isEditPage() ? `Edit ${type} entry` : `Add new ${type} entry`}
+        </div>
+        {isEditPage() ? (
+          <button type="submit" form={"itemForm"}>
+            <FaCheck />
+            Save
+          </button>
+        ) : (
+          <button type="submit" form={"itemForm"}>
+            <FaPlus />
+            Add
+          </button>
         )}
-        <Form.Group className="mb-3" controlId="formBasicDesc">
-          <Form.Label>
-            {type !== "aboutUs" ? "Description" : "About Us"}
-          </Form.Label>
-          <Form.Control
-            disabled={isSubmitting}
-            as="textarea"
-            placeholder={type !== "aboutUs" ? "Description" : "About Us"}
-            {...textareaRegisterProps}
-          />
-          {"description" in errors && errors.description && (
-            <div className="text-danger">{errors.description.message}</div>
-          )}
-          {"aboutUs" in errors && errors.aboutUs && (
-            <div className="text-danger">{errors.aboutUs.message}</div>
-          )}
-        </Form.Group>
-        {type !== "device" && type !== "aboutUs" && (
-          <Form.Group className="mb-3" controlId="formBasicLocation">
-            <Form.Label>Location</Form.Label>
-            <div style={{ height: "300px", width: "100%" }}>
-              {isLoaded && (
-                <GoogleMap
-                  mapContainerStyle={{ height: "300px", width: "100%" }}
-                  center={{ lat: watch("lat"), lng: watch("lng") }}
-                  mapTypeId="satellite"
-                  zoom={13}
-                  options={{
-                    streetViewControl: false,
-                    fullscreenControl: false,
-                  }}
-                  onClick={handleMapClick}
-                >
-                  <MarkerF
-                    position={{
-                      lat: watch("lat"),
-                      lng: watch("lng"),
-                    }}
-                  />
-                </GoogleMap>
+      </div>
+      <div className={"itemForm"}>
+        <form
+          id={"itemForm"}
+          className={"itemForm__form"}
+          onSubmit={handleSubmit(isEditPage() ? updateItem : addNewItem)}
+        >
+          <div className={"itemForm__form__top"}>
+            <div
+              className={"itemForm__form__top__dropzone"}
+              {...getRootProps()}
+            >
+              <input {...getInputProps()} />
+              <div className={"itemForm__form__top__dropzone__inside"}>
+                <RiImageAddFill size={ICON_SIZE} color={ICON_COLOR} />
+                {isDragActive ? (
+                  <div>Drop the files here ...</div>
+                ) : (
+                  <div>
+                    Click to select an asset or drag and drop in this area
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className={"itemForm__form__top__input"}>
+              <div>
+                <label>{type !== "about us" ? "Title" : "Moto"}</label>
+                <input
+                  disabled={isSubmitting}
+                  placeholder={
+                    type !== "about us"
+                      ? "Enter title"
+                      : "Enter you company moto"
+                  }
+                  {...titleRegisterProps}
+                />
+                {"title" in errors && errors.title?.message && (
+                  <div className="text-danger">{errors.title.message}</div>
+                )}
+                {"moto" in errors && errors.moto?.message && (
+                  <div className="text-danger">{errors.moto.message}</div>
+                )}
+              </div>
+              {"titleImage" in errors && errors.titleImage?.message && (
+                <div className="text-danger">
+                  Molimo odaberite jednu sliku kao title
+                </div>
+              )}
+              {errors.root && (
+                <div className="text-danger">{errors.root.message}</div>
+              )}
+              {type === "beaches" && (
+                <div>
+                  <label>Terrain type</label>
+                  <select disabled={isSubmitting} {...register("terrainType")}>
+                    <option value="gravel">Gravel</option>
+                    <option value="sand">Sand</option>
+                  </select>
+                  {"terrainType" in errors && errors.terrainType?.message && (
+                    <div className="text-danger">
+                      {errors.terrainType.message}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
-          </Form.Group>
-        )}
-
-        {type === "restaurant" && (
-          <>
-            <Form.Group controlId="formReview" className="mb-3">
-              <Form.Label>Review</Form.Label>
-              <Form.Control
-                type="number"
-                placeholder="Review"
-                disabled={isSubmitting}
-                step={0.1}
-                {...register("review")}
-              />
-              {"review" in errors && errors.review?.message && (
-                <div className="text-danger">{errors.review.message}</div>
-              )}
-            </Form.Group>
-            <Form.Group controlId="formReviewAmount" className="mb-3">
-              <Form.Label>Number of Reviews</Form.Label>
-              <Form.Control
-                disabled={isSubmitting}
-                type="number"
-                placeholder="Number of reviews"
-                {...register("reviewAmount")}
-              />
-              {"reviewAmount" in errors && errors.reviewAmount?.message && (
-                <div className="text-danger">{errors.reviewAmount.message}</div>
-              )}
-            </Form.Group>
-            <Form.Group controlId="formEmail" className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                disabled={isSubmitting}
-                type="email"
-                placeholder="Email"
-                {...register("contacts.email")}
-              />
-              {"contacts" in errors && errors.contacts?.email?.message && (
-                <div className="text-danger">
-                  {errors.contacts?.email?.message}
-                </div>
-              )}
-            </Form.Group>
-            <Form.Group controlId="Number" className="mb-3">
-              <Form.Label>Phone Number</Form.Label>
-              <Form.Control
-                disabled={isSubmitting}
-                type="string"
-                placeholder="Phone number"
-                {...register("contacts.number")}
-              />
-              {"contacts" in errors && errors.contacts?.number?.message && (
-                <div className="text-danger">
-                  {errors.contacts?.number?.message}
-                </div>
-              )}
-            </Form.Group>
-          </>
-        )}
-        {type !== "aboutUs" && (
-          <Form.Group controlId="formFileMultiple" className="mb-3">
-            <Form.Label>Upload Photos</Form.Label>
-            <Form.Control
-              disabled={isSubmitting}
-              type="file"
-              multiple={
-                type === "beach" ||
-                type === "restaurant" ||
-                type === "attraction"
-              }
-              accept="image/*"
-              onChange={(e) =>
-                handleFileUpload(
-                  type === "beach" ||
-                    type === "restaurant" ||
-                    type === "attraction"
-                    ? "multiple"
-                    : "single",
-                  e as React.ChangeEvent<HTMLInputElement>,
-                )
-              }
-            />
-          </Form.Group>
-        )}
-        {type !== "aboutUs" && (
-          <div className="d-flex flex-wrap">
-            {files?.length &&
-              files.map((file, index) => {
-                return (
-                  <div key={index} className="d-flex flex-column ms-3 mb-3">
-                    <img
-                      src={URL.createObjectURL(file)}
-                      width="auto"
-                      height="100px"
-                      className="mb-1"
-                    />
-                    <Button
-                      disabled={isSubmitting}
-                      variant="danger"
-                      className="mb-1"
-                      onClick={() =>
-                        setFiles(
-                          files.filter((stateFile) => stateFile !== file),
-                        )
-                      }
-                    >
-                      Delete
-                    </Button>
-                    <Button
-                      disabled={isSubmitting || watch("titleImage") === index}
-                      variant="primary"
-                      onClick={() => setValue("titleImage", index)}
-                    >
-                      Title Image
-                    </Button>
-                  </div>
-                );
-              })}
-
-            {docImgUrls?.length &&
-              docImgUrls.map((imgUrl) => {
-                return (
-                  <div key={imgUrl} className="d-flex flex-column ms-3 mb-3">
-                    <img
-                      src={imgUrl}
-                      alt={imgUrl}
-                      width="auto"
-                      height="100px"
-                      className="mb-1"
-                    />
-                    <Button
-                      disabled={isSubmitting}
-                      className="mb-1"
-                      variant="danger"
-                      onClick={() => deleteImageFromStorage(imgUrl)}
-                    >
-                      Delete
-                    </Button>
-                    <Button
-                      disabled={isSubmitting || watch("titleImage") === imgUrl}
-                      variant="primary"
-                      onClick={() => setValue("titleImage", imgUrl)}
-                    >
-                      Title Image
-                    </Button>
-                  </div>
-                );
-              })}
           </div>
-        )}
-        {"titleImage" in errors && errors.titleImage?.message && (
-          <div>Molimo odaberite jednu sliku kao title</div>
-        )}
-        {errors.root && (
-          <div className="text-danger">{errors.root.message}</div>
-        )}
-        {isSubmitting && <ProgressBar now={progress} />}
-        <Button variant="primary" type="submit" disabled={isSubmitting}>
-          {isEditPage() ? "Save changes" : "Add"}
-        </Button>
-      </Form>
-    </Layout>
+
+          <div className={"itemForm__form__bottom"}>
+            <div className={"itemForm__form__bottom__images"}>
+              {files?.length !== 0 &&
+                files?.map((file, index) => {
+                  return (
+                    <div
+                      key={index}
+                      className={"itemForm__form__bottom__images__container"}
+                    >
+                      <img
+                        src={URL.createObjectURL(file)}
+                        width="auto"
+                        height="100px"
+                      />
+                      <button
+                        className={
+                          "itemForm__form__bottom__images__container__delete"
+                        }
+                        type={"button"}
+                        disabled={isSubmitting}
+                        onClick={() =>
+                          setFiles(
+                            files.filter((stateFile) => stateFile !== file),
+                          )
+                        }
+                      >
+                        Remove
+                      </button>
+                      <button
+                        className={
+                          "itemForm__form__bottom__images__container__titleImage"
+                        }
+                        type={"button"}
+                        disabled={isSubmitting || watch("titleImage") === index}
+                        onClick={() => setValue("titleImage", index)}
+                      >
+                        Title Image
+                      </button>
+                    </div>
+                  );
+                })}
+
+              {docImgUrls?.length !== 0 &&
+                docImgUrls?.map((imgUrl) => {
+                  return (
+                    <div
+                      key={imgUrl}
+                      className={"itemForm__form__bottom__images__container"}
+                    >
+                      <img
+                        src={formatImageUrl(imgUrl)}
+                        alt={formatImageUrl(imgUrl)}
+                        width="auto"
+                        height="100px"
+                      />
+                      <button
+                        className={
+                          "itemForm__form__bottom__images__container__delete"
+                        }
+                        type={"button"}
+                        disabled={isSubmitting}
+                        onClick={() => deleteImageFromStorage(imgUrl)}
+                      >
+                        Remove
+                      </button>
+                      <button
+                        className={
+                          "itemForm__form__bottom__images__container__titleImage"
+                        }
+                        type={"button"}
+                        disabled={
+                          isSubmitting || watch("titleImage") === imgUrl
+                        }
+                        onClick={() => setValue("titleImage", imgUrl)}
+                      >
+                        Title Image
+                      </button>
+                    </div>
+                  );
+                })}
+            </div>
+            <div className={"itemForm__form__bottom__input"}>
+              <label>{type !== "about us" ? "Description" : "About Us"}</label>
+              <textarea
+                rows={10}
+                disabled={isSubmitting}
+                placeholder={
+                  type !== "about us"
+                    ? "Enter your description here..."
+                    : "About Us"
+                }
+                {...textareaRegisterProps}
+              />
+              {"description" in errors && errors.description && (
+                <div className="text-danger">{errors.description.message}</div>
+              )}
+              {"aboutUs" in errors && errors.aboutUs && (
+                <div className="text-danger">{errors.aboutUs.message}</div>
+              )}
+            </div>
+
+            {type === "restaurants" && (
+              <>
+                <div className={"itemForm__form__bottom__input"}>
+                  <label htmlFor={"rating"}>Rating</label>
+                  <input
+                    id={"rating"}
+                    type="number"
+                    placeholder="From 1 to 5 how many stars restaurant has"
+                    disabled={isSubmitting}
+                    step={0.1}
+                    {...register("review")}
+                  />
+                  {"review" in errors && errors.review?.message && (
+                    <div className="text-danger">{errors.review.message}</div>
+                  )}
+                </div>
+                <div className={"itemForm__form__bottom__input"}>
+                  <label htmlFor={"reviews"}>Number of Reviews</label>
+                  <input
+                    id={"reviews"}
+                    disabled={isSubmitting}
+                    type="number"
+                    placeholder="Number of reviews"
+                    {...register("reviewAmount")}
+                  />
+                  {"reviewAmount" in errors && errors.reviewAmount?.message && (
+                    <div className="text-danger">
+                      {errors.reviewAmount.message}
+                    </div>
+                  )}
+                </div>
+                <div className={"itemForm__form__bottom__input"}>
+                  <label>Email</label>
+                  <input
+                    disabled={isSubmitting}
+                    type="email"
+                    placeholder="Email"
+                    {...register("contacts.email")}
+                  />
+                  {"contacts" in errors && errors.contacts?.email?.message && (
+                    <div className="text-danger">
+                      {errors.contacts?.email?.message}
+                    </div>
+                  )}
+                </div>
+                <div className={"itemForm__form__bottom__input"}>
+                  <label>Phone Number</label>
+                  <input
+                    disabled={isSubmitting}
+                    type="string"
+                    placeholder="Phone number"
+                    {...register("contacts.number")}
+                  />
+                  {"contacts" in errors && errors.contacts?.number?.message && (
+                    <div className="text-danger">
+                      {errors.contacts?.number?.message}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {type !== "devices" && type !== "about us" && (
+              <div className={"itemForm__form__bottom__input"}>
+                <label>Location</label>
+                <div style={{ height: "300px", width: "100%" }}>
+                  {isLoaded && (
+                    <GoogleMap
+                      mapContainerStyle={{ height: "300px", width: "100%" }}
+                      center={{ lat: watch("lat"), lng: watch("lng") }}
+                      mapTypeId="satellite"
+                      zoom={13}
+                      options={{
+                        streetViewControl: false,
+                        fullscreenControl: false,
+                      }}
+                      onClick={handleMapClick}
+                    >
+                      <MarkerF
+                        position={{
+                          lat: watch("lat"),
+                          lng: watch("lng"),
+                        }}
+                      />
+                    </GoogleMap>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </form>
+        <div className={"itemForm__locale"}></div>
+      </div>
+    </Sidebar>
   );
 };
 

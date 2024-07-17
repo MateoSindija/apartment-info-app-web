@@ -3,10 +3,17 @@
 @import "base/_reset";
 @import "base/_colors";
 
-// Layout
+// Sidebar
 @import "layout/sidebar";
 // Components
 @import "components/signIn";
+@import "components/signUp";
+@import "components/apartmentList";
+@import "components/modal";
+@import "components/newApartment";
+@import "components/apartmentCard";
+@import "components/list";
+@import "components/newItemForm";
 
 // Utils
 @import "utils/_variables";

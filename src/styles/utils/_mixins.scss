@@ -1,6 +1,6 @@
 @mixin ripple-effect($background-color) {
   background-position: center;
-  transition: background 0.3s;
+  transition: background 0.2s;
   cursor: pointer;
 
   &:hover {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { IReview } from "../interfaces/NewItemInterface";
 import { collection, getDocs } from "firebase/firestore";
-import Layout from "../components/Layout";
+import Sidebar from "../layout/Sidebar";
 import { ListGroup } from "react-bootstrap";
 import { ReviewItem } from "../components/ReviewItem";
 
@@ -21,7 +21,7 @@ const ReviewsPage = () => {
     getData();
   }, []);
   return (
-    <Layout>
+    <Sidebar>
       <>
         <ListGroup as="ul" className="mt-3">
           {list.map((item) => {
@@ -29,7 +29,7 @@ const ReviewsPage = () => {
           })}
         </ListGroup>
       </>
-    </Layout>
+    </Sidebar>
   );
 };
 

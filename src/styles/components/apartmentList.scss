@@ -1,0 +1,62 @@
+.apartmentList {
+  padding: 30px;
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  &__header {
+    width: 100%;
+    position: relative;
+
+    h3 {
+      display: flex;
+      justify-content: center;
+      flex: 1;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 100px;
+    }
+
+    button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      @include button(white);
+      width: 100px;
+      height: 50px;
+      border: 1px solid $primary-color;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: 20px;
+  }
+
+  &__add {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    @include generic-shadow;
+    @include button($gray-300);
+    background-color: $gray-100;
+
+    width: 150px;
+    height: 170px;
+    padding: 10px;
+
+    &__text {
+      margin-top: 15px;
+      color: $gray-500;
+      font-size: 13px;
+    }
+  }
+}

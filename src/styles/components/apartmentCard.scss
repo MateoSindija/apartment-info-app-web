@@ -1,0 +1,39 @@
+.apartmentCard {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: black;
+
+  @include generic-shadow;
+  @include button($gray-300);
+  background-color: $gray-100;
+
+  width: 150px;
+  height: 170px;
+  padding: 10px;
+
+  box-sizing: border-box;
+
+  &__frame {
+    background-color: white;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__name {
+    font-weight: 700;
+    font-size: 18px;
+    margin-top: 10px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  &__address {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    margin-top: 8px;
+    font-size: 12px;
+  }
+}

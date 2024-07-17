@@ -1,18 +1,60 @@
+@import "../utils/_variables.scss";
+
 .layout {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
   &__sidebar {
+    position: fixed; /* Fix the sidebar position */
+    top: 0; /* Align to the top of the viewport */
+    left: 0; /* Align to the left side of the viewport */
+    z-index: 4;
+    height: 100%;
+    border-right: 1px solid $gray-200;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    width: 250px;
+    width: $sidebar-width;
     background-color: white;
-    padding: 20px;
-    margin-right: 20px;
+    padding: 30px 10px;
 
-    &__item {
+    &__info {
+      margin-left: 10px;
+
+      &__name {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      &__address {
+        font-size: 13px;
+        color: $gray-500;
+        margin-bottom: 10px;
+      }
+    }
+
+    &__group {
+      display: flex;
+      text-transform: uppercase;
+      color: $gray-500;
+      font-size: 13px;
+      font-weight: 500;
+      margin: 10px 0 5px 10px;
+    }
+
+    &__signOut {
+      border: none;
+      background-color: white;
+      border-radius: 12px;
       text-decoration: none;
+      text-transform: uppercase;
+      font-size: 13px;
       color: $regent-grey;
+
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+
       &:hover {
         background-color: $gray-300;
       }
@@ -21,12 +63,35 @@
       }
 
       width: 100%;
-      padding: 10px 30px;
+      padding: 10px 10px;
+    }
+
+    &__item {
+      border-radius: 12px;
+      text-decoration: none;
+      text-transform: uppercase;
+      font-size: 13px;
+      color: $regent-grey;
+
+      display: flex;
+      align-items: center;
+
+      &:hover {
+        background-color: $gray-300;
+      }
+      svg {
+        margin-right: 10px;
+      }
+
+      width: 100%;
+      padding: 10px 10px;
     }
   }
 
-  .main-content {
+  &__mainContent {
     flex-grow: 1;
-    padding: 20px;
+    padding: 30px 40px 20px $sidebar-width + 20px;
+    background-color: $gray-100;
+    min-height: 100%;
   }
 }
