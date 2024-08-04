@@ -8,7 +8,11 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { FaShoppingBasket, FaUmbrellaBeach } from "react-icons/fa";
+import {
+  FaAddressBook,
+  FaShoppingBasket,
+  FaUmbrellaBeach,
+} from "react-icons/fa";
 import { IoPeopleSharp, IoRestaurant } from "react-icons/io5";
 import { BiSolidMessageSquareDetail } from "react-icons/bi";
 import { FaMountainCity } from "react-icons/fa6";
@@ -17,6 +21,7 @@ import { PiDevicesFill } from "react-icons/pi";
 import { CiLogout } from "react-icons/ci";
 import { RiLogoutBoxFill } from "react-icons/ri";
 import { useGetApartmentInfoQuery } from "@/api/api";
+import { IoMdSettings } from "react-icons/io";
 
 interface IProps {
   children: JSX.Element[] | JSX.Element;
@@ -148,6 +153,28 @@ const Sidebar = ({ children }: IProps) => {
               size={ICON_SIZE}
             />
             About Us
+          </a>
+          <a
+            href={`/${apartmentId}/apartment-info`}
+            className="layout__sidebar__item"
+            style={{ color: handleIconColor("apartment-info") }}
+          >
+            <IoMdSettings
+              color={handleIconColor("apartment-info")}
+              size={ICON_SIZE}
+            />
+            Apartment Info
+          </a>
+          <a
+            href={`/${apartmentId}/reservations`}
+            className="layout__sidebar__item"
+            style={{ color: handleIconColor("reservations") }}
+          >
+            <FaAddressBook
+              color={handleIconColor("reservations")}
+              size={ICON_SIZE}
+            />
+            Reservations
           </a>
           <div className="layout__sidebar__group">User</div>
           <a

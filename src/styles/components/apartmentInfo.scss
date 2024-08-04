@@ -1,0 +1,19 @@
+.apartmentInfo {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 6px;
+  padding: 30px;
+  @include generic-shadow;
+
+  &__id {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+
+    &__title {
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+  }
+}

@@ -10,6 +10,13 @@ import {
 import { formatDateString } from "@/utils/functions";
 import { FaPen, FaTrash } from "react-icons/fa";
 import { useParams } from "react-router-dom";
+import {
+  useDeleteBeachMutation,
+  useDeleteDeviceMutation,
+  useDeleteRestaurantMutation,
+  useDeleteShopMutation,
+  useDeleteSightMutation,
+} from "@/api/api";
 
 interface IProps {
   data: IRestaurant[] | IBeach[] | ISight[] | IDevice[] | IShop[] | undefined;
@@ -37,8 +44,31 @@ const handleId = (
   }
 };
 
+const handleDeleteType = (type: IProps["type"]) => {
+  switch (type) {
+    case "restaurants":
+      return useDeleteRestaurantMutation();
+    case "beaches":
+      return useDeleteBeachMutation();
+    case "devices":
+      return useDeleteDeviceMutation();
+    case "shops":
+      return useDeleteShopMutation();
+    case "sights":
+      return useDeleteSightMutation();
+  }
+};
+
 const AttractionList = ({ data, type }: IProps) => {
   const { apartmentId } = useParams();
+
+  const [deleteItem, { isLoading }] = handleDeleteType(type);
+
+  const handleDelete = async (id: string) => {
+    if (!apartmentId) return;
+    await deleteItem({ apartmentId: apartmentId, attractionId: id });
+  };
+
   return (
     <div className={"listPage"}>
       <div className={"listPage__header"}>
@@ -56,7 +86,10 @@ const AttractionList = ({ data, type }: IProps) => {
               </div>
 
               <div className={"listPage__row__controls"}>
-                <button>
+                <button
+                  disabled={isLoading}
+                  onClick={() => handleDelete(handleId(type, attraction))}
+                >
                   <FaTrash color={ICON_COLOR} size={ICON_SIZE} />
                 </button>
                 <a

@@ -12,9 +12,14 @@ import { Provider } from "react-redux";
 import { persistor, store } from "./redux/store";
 import { PersistGate } from "redux-persist/integration/react";
 import "@/styles/index.scss";
+import "react-calendar/dist/Calendar.css";
+import "react-datepicker/dist/react-datepicker.css";
 import SignUpPage from "@/pages/SignUpPage";
 import ApartmentSelectPage from "@/pages/ApartmentSelectPage";
-
+import ReservationPage from "@/pages/ReservationPage";
+import NewReservationPage from "@/pages/NewReservationPage";
+import Sidebar from "@/layout/Sidebar";
+import ApartmentInfoPage from "@/pages/ApartmentInfoPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -103,6 +108,22 @@ const router = createBrowserRouter([
       {
         path: "/:apartmentId/aboutUs/edit",
         element: <NewItemPage type="about us" />,
+      },
+      {
+        path: "/:apartmentId/reservations",
+        element: <ReservationPage />,
+      },
+      {
+        path: "/:apartmentId/reservations/new",
+        element: <NewReservationPage />,
+      },
+      {
+        path: "/:apartmentId/reservations/:reservationId/edit",
+        element: <NewReservationPage />,
+      },
+      {
+        path: "/:apartmentId/apartment-info",
+        element: <ApartmentInfoPage />,
       },
     ],
   },

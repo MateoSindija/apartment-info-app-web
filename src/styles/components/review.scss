@@ -1,0 +1,64 @@
+.reviews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+
+  &__review {
+    padding: 15px;
+    border-radius: 12px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+    height: fit-content;
+    height: 235px;
+    box-sizing: border-box;
+
+    @include generic-shadow;
+
+    &__header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+
+      &__client {
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      &__date {
+        color: $gray-600;
+      }
+    }
+
+    &__ratings {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+
+      &__container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        &__type {
+          font-size: 15px;
+          text-transform: uppercase;
+          color: $gray-600;
+          margin-bottom: 8px;
+        }
+      }
+    }
+
+    &__text {
+      display: flex;
+      text-align: justify;
+      &__icon {
+        margin-right: 15px;
+      }
+
+      &__textBody {
+        color: $gray-600;
+      }
+    }
+  }
+}

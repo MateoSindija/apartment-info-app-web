@@ -16,57 +16,57 @@ import {
   INewDevice,
   INewRestaurant,
   IRestaurant,
+  IShop,
   ISight,
-} from "../interfaces/NewItemInterface";
+} from "@/interfaces/NewItemInterface";
 import { useForm } from "react-hook-form";
 import {
   NewBeachSchema,
   NewDeviceSchema,
   NewItemBasicSchema,
   NewRestaurantSchema,
-} from "../schemas/NewItemSchemas";
+} from "@/schemas/NewItemSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ZodType } from "zod";
-import {
-  deleteObject,
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "@firebase/storage";
-import {
-  addDoc,
-  arrayRemove,
-  arrayUnion,
-  collection,
-  doc,
-  getDoc,
-  updateDoc,
-} from "firebase/firestore";
 import { GoogleMap, MarkerF, useLoadScript } from "@react-google-maps/api";
 import { useLocation, useParams } from "react-router-dom";
-import { IAboutUs } from "@/interfaces/AboutUsInterface";
+import { IAboutUs, INewAboutUs } from "@/interfaces/AboutUsInterface";
 import { AboutUsSchema } from "@/schemas/AboutUsSchema";
 import { FaCheck, FaPlus } from "react-icons/fa6";
 import { useDropzone } from "react-dropzone";
 import { RiImageAddFill } from "react-icons/ri";
 import {
+  useAddAboutUsMutation,
   useAddBeachMutation,
   useAddDeviceMutation,
+  useAddExistingBeachMutation,
+  useAddExistingDeviceMutation,
+  useAddExistingRestaurantMutation,
+  useAddExistingShopMutation,
+  useAddExistingSightMutation,
   useAddRestaurantMutation,
   useAddShopMutation,
   useAddSightMutation,
   useGetAboutUsInfoQuery,
+  useGetAllUserBeachesInfoQuery,
+  useGetAllUserDevicesInfoQuery,
+  useGetAllUserRestaurantsInfoQuery,
+  useGetAllUserShopsInfoQuery,
+  useGetAllUserSightsInfoQuery,
   useGetBeachInfoQuery,
   useGetDeviceInfoQuery,
   useGetRestaurantInfoQuery,
   useGetShopInfoQuery,
   useGetSightInfoQuery,
+  useUpdateAboutUsMutation,
+  useUpdateBeachMutation,
+  useUpdateDeviceMutation,
+  useUpdateRestaurantMutation,
+  useUpdateShopMutation,
+  useUpdateSightMutation,
 } from "@/api/api";
-import accept from "attr-accept";
-import { UseQueryHookResult } from "@reduxjs/toolkit/src/query/react/buildHooks";
-import { QueryReturnValue } from "@reduxjs/toolkit/src/query/baseQueryTypes";
-import { formatImageUrl } from "@/utils/functions";
+import { formatDateString, formatImageUrl } from "@/utils/functions";
+import PageHeader from "@/components/PageHeader";
 
 interface IProps {
   type: "devices" | "sights" | "shops" | "restaurants" | "beaches" | "about us";
@@ -77,7 +77,7 @@ type PossibleInterfaces =
   | IBeach
   | IRestaurant
   | ISight
-  | IAboutUs
+  | INewAboutUs
   | IBasic;
 
 type PossibleNewInterfaces =
@@ -85,10 +85,28 @@ type PossibleNewInterfaces =
   | INewBeach
   | INewRestaurant
   | INewBasicWithPostion
-  | IAboutUs;
+  | INewAboutUs;
 
 const ICON_SIZE = 50;
 const ICON_COLOR = "#adb5bd";
+const handleId = (
+  type: IProps["type"],
+  data: IRestaurant | IBeach | IDevice | ISight | IShop,
+) => {
+  if ("restaurantId" in data) {
+    return data.restaurantId;
+  } else if ("beachId" in data) {
+    return data.beachId;
+  } else if ("deviceId" in data) {
+    return data.deviceId;
+  } else if ("sightId" in data) {
+    return data.sightId;
+  } else if ("shopId" in data) {
+    return data.shopId;
+  } else {
+    return "";
+  }
+};
 
 const newDocFields = (
   docData: PossibleNewInterfaces,
@@ -97,45 +115,60 @@ const newDocFields = (
 ) => {
   const formData = new FormData();
 
-  if ("title" in docData) {
-    formData.append("title", docData.title);
-  }
-  if ("lat" in docData) {
-    formData.append("lat", docData.lat.toString());
-    formData.append("lng", docData.lng.toString());
-  }
-  if ("description" in docData) {
-    formData.append("description", docData.description);
-  }
-  if ("terrainType" in docData) {
-    formData.append("terrainType", docData.terrainType);
+  for (const key in docData) {
+    if (docData.hasOwnProperty(key)) {
+      const typedKey = key as keyof Partial<PossibleNewInterfaces>;
+      const value = docData[typedKey];
+
+      if (value !== undefined) {
+        if (typeof value === "string" || typeof value === "number") {
+          formData.append(typedKey, value.toString());
+        }
+      }
+    }
   }
 
-  if ("moto" in docData) {
-    formData.append("moto", docData.moto);
-  }
-
-  if ("aboutUs" in docData) {
-    formData.append("aboutUs", docData.aboutUs);
-  }
-
-  if ("review" in docData) {
-    formData.append("review", docData.review.toString());
-  }
-  if ("reviewAmount" in docData) {
-    formData.append("reviewAmount", docData.reviewAmount.toString());
-  }
-  if ("contacts" in docData) {
-    formData.append("emailContact", docData.contacts.email);
-    formData.append("phoneContact", docData.contacts.number);
-  }
-
-  formData.append("titleImage", docData.titleImage?.toString() ?? "0");
-  formData.append("apartmentId", apartmentId);
-
+  // Handle files
   files.forEach((file) => {
     formData.append("images", file);
   });
+
+  // Append apartmentId separately as it's always a string
+  formData.append("apartmentId", apartmentId);
+
+  return formData;
+};
+
+const updateDocFields = (
+  docData: PossibleNewInterfaces,
+  files: File[] | undefined,
+  docImgUrls: string[] | undefined,
+) => {
+  const formData = new FormData();
+
+  for (const key in docData) {
+    if (docData.hasOwnProperty(key)) {
+      const typedKey = key as keyof Partial<PossibleNewInterfaces>;
+      const value = docData[typedKey];
+
+      if (value !== undefined) {
+        // Convert to string if necessary, based on the expected type
+        formData.append(typedKey, value.toString());
+      }
+    }
+  }
+
+  if (docImgUrls) {
+    docImgUrls.forEach((url, index) => {
+      formData.append(`imagesUrlArray[${index}]`, url);
+    });
+  }
+
+  if (files) {
+    files.forEach((file) => {
+      formData.append("images", file);
+    });
+  }
 
   return formData;
 };
@@ -151,36 +184,78 @@ const NewItemPage = ({ type }: IProps) => {
   const url = useLocation();
   const { id, apartmentId } = useParams();
 
-  const handleData = (type: IProps["type"], id: string) => {
-    switch (type) {
-      case "beaches":
-        return useGetBeachInfoQuery(id);
-      case "restaurants":
-        return useGetRestaurantInfoQuery(id);
-      case "devices":
-        return useGetDeviceInfoQuery(id);
-      case "sights":
-        return useGetSightInfoQuery(id);
-      case "shops":
-        return useGetShopInfoQuery(id);
-      case "about us":
-        return useGetAboutUsInfoQuery(id);
+  const handleData = (
+    type: IProps["type"],
+    id: string | undefined,
+    apartmentId: string,
+  ) => {
+    if (id)
+      switch (type) {
+        case "beaches":
+          return useGetBeachInfoQuery(id);
+        case "restaurants":
+          return useGetRestaurantInfoQuery(id);
+        case "devices":
+          return useGetDeviceInfoQuery(id);
+        case "sights":
+          return useGetSightInfoQuery(id);
+        case "shops":
+          return useGetShopInfoQuery(id);
+
+        default:
+          return { data: undefined };
+      }
+    if (apartmentId) {
+      return useGetAboutUsInfoQuery(apartmentId);
     }
+    return { data: undefined };
   };
-  const { data: editData } = id ? handleData(type, id) : { data: undefined };
+  const handleGetAttractionsFromOtherApartments = (
+    type: IProps["type"],
+    apartmentId: string,
+    id: string | undefined,
+  ) => {
+    if (!id)
+      switch (type) {
+        case "beaches":
+          return useGetAllUserBeachesInfoQuery(apartmentId);
+        case "restaurants":
+          return useGetAllUserRestaurantsInfoQuery(apartmentId);
+        case "shops":
+          return useGetAllUserShopsInfoQuery(apartmentId);
+        case "sights":
+          return useGetAllUserSightsInfoQuery(apartmentId);
+        case "devices":
+          return useGetAllUserDevicesInfoQuery(apartmentId);
+        default:
+          return { data: undefined };
+      }
+
+    return { data: undefined };
+  };
+  const { data: editData } = handleData(type, id, apartmentId ?? "");
+  const { data: otherAttractions } = handleGetAttractionsFromOtherApartments(
+    type,
+    apartmentId ?? "",
+    id,
+  );
+
+  const isEditPage = () => {
+    return data !== undefined;
+  };
 
   useEffect(() => {
-    if (id && !url.pathname.includes("new") && editData) {
+    if (editData) {
       setDocImgUrls(editData.imagesUrl ?? []);
       setData(editData);
-      getDefaultValues(editData);
     }
+    getDefaultValues(editData);
   }, [url, editData]);
 
   const handleAddItem = (type: IProps["type"]) => {
     switch (type) {
       case "about us":
-        return useAddBeachMutation();
+        return useAddAboutUsMutation();
       case "sights":
         return useAddSightMutation();
       case "beaches":
@@ -193,8 +268,42 @@ const NewItemPage = ({ type }: IProps) => {
         return useAddShopMutation();
     }
   };
+  const handleUpdateItem = (type: IProps["type"]) => {
+    switch (type) {
+      case "about us":
+        return useUpdateAboutUsMutation();
+      case "sights":
+        return useUpdateSightMutation();
+      case "beaches":
+        return useUpdateBeachMutation();
+      case "devices":
+        return useUpdateDeviceMutation();
+      case "restaurants":
+        return useUpdateRestaurantMutation();
+      case "shops":
+        return useUpdateShopMutation();
+    }
+  };
+  const handleAddExistingItem = (type: IProps["type"]) => {
+    switch (type) {
+      case "devices":
+        return useAddExistingDeviceMutation();
+      case "sights":
+        return useAddExistingSightMutation();
+      case "shops":
+        return useAddExistingShopMutation();
+      case "restaurants":
+        return useAddExistingRestaurantMutation();
+      case "beaches":
+        return useAddExistingBeachMutation();
+      default:
+        return useAddExistingDeviceMutation();
+    }
+  };
 
-  const [addItem, { isLoading }] = handleAddItem(type);
+  const [addItem] = handleAddItem(type);
+  const [updateItem] = handleUpdateItem(type);
+  const [addExistingAttraction] = handleAddExistingItem(type);
 
   const getDefaultValues = (data: PossibleInterfaces | undefined) => {
     if (!data) {
@@ -203,38 +312,14 @@ const NewItemPage = ({ type }: IProps) => {
       setValue("lng", 14.4422);
       return;
     }
-    console.log(data);
 
-    if ("terrainType" in data) {
-      setValue("title", data.title);
-      setValue("description", data.description);
-      setValue("titleImage", data.titleImage);
-      setValue("lat", data.location.coordinates[1]);
-      setValue("lng", data.location.coordinates[0]);
-      setValue("terrainType", data.terrainType);
-    } else if ("review" in data) {
-      setValue("title", data.title);
-      setValue("description", data.description);
-      setValue("titleImage", data.titleImage);
-      setValue("lat", data.location.coordinates[1]);
-      setValue("lng", data.location.coordinates[0]);
-      setValue("contacts.email", data.emailContact);
-      setValue("contacts.number", data.phoneContact);
-      setValue("reviewAmount", data.reviewAmount);
-      setValue("review", data.review);
-    } else if ("location" in data) {
-      setValue("title", data.title);
-      setValue("description", data.description);
-      setValue("titleImage", data.titleImage);
-      setValue("lat", data.location.coordinates[1]);
-      setValue("lng", data.location.coordinates[0]);
-    } else if ("title" in data) {
-      setValue("title", data.title);
-      setValue("description", data.description);
-      setValue("titleImage", data.titleImage);
-    } else if ("aboutUs" in data) {
-      setValue("aboutUs", data.aboutUs);
-      setValue("moto", data.moto);
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        setValue(
+          key as keyof PossibleInterfaces,
+          data[key as keyof PossibleInterfaces],
+        );
+      }
     }
   };
 
@@ -271,7 +356,6 @@ const NewItemPage = ({ type }: IProps) => {
     clearErrors,
   } = useForm<PossibleNewInterfaces>({
     resolver: zodResolver(handleSchemaType() as ZodType<any, any, any>),
-    // defaultValues: getDefaultValues(editData),
   });
 
   const textareaRegisterProps =
@@ -317,7 +401,7 @@ const NewItemPage = ({ type }: IProps) => {
     setDocImgUrls((prevState) => prevState?.filter((url) => url !== imgUrl));
   };
 
-  const updateItem = async (updatedData: PossibleNewInterfaces) => {
+  const updateExistingItem = async (updatedData: PossibleNewInterfaces) => {
     clearErrors();
 
     if (!id) return;
@@ -328,15 +412,14 @@ const NewItemPage = ({ type }: IProps) => {
     }
 
     try {
-      let filesUrl: string[] | undefined = undefined;
-      if (files?.length) {
-        // filesUrl = await imagesUpload(files);
-      }
-      // const docRef = doc(db, transformToPlural(type), params?.id ?? "aboutUs");
-      // await updateDoc(docRef, newDocFields(updatedData, filesUrl));
+      await updateItem({
+        data: updateDocFields(updatedData, files, docImgUrls),
+        id: id,
+      });
     } catch (e) {
       console.log(e);
     }
+    setFiles([]);
   };
 
   const addNewItem = async (data: PossibleNewInterfaces) => {
@@ -358,9 +441,16 @@ const NewItemPage = ({ type }: IProps) => {
     setFiles([]);
   };
 
-  const isEditPage = () => {
-    if (data !== undefined) return true;
-    return url.pathname.includes("edit");
+  const addExistingItem = async (id: string) => {
+    if (!apartmentId) return;
+    try {
+      await addExistingAttraction({
+        attractionId: id,
+        apartmentId: apartmentId,
+      });
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const handleMapClick = (e: google.maps.MapMouseEvent) => {
@@ -370,10 +460,9 @@ const NewItemPage = ({ type }: IProps) => {
 
   return (
     <Sidebar>
-      <div className={"pageHeader"}>
-        <div className={"pageHeader__title"}>
-          {isEditPage() ? `Edit ${type} entry` : `Add new ${type} entry`}
-        </div>
+      <PageHeader
+        title={isEditPage() ? `Edit ${type} entry` : `Add new ${type} entry`}
+      >
         {isEditPage() ? (
           <button type="submit" form={"itemForm"}>
             <FaCheck />
@@ -385,12 +474,14 @@ const NewItemPage = ({ type }: IProps) => {
             Add
           </button>
         )}
-      </div>
+      </PageHeader>
       <div className={"itemForm"}>
         <form
           id={"itemForm"}
           className={"itemForm__form"}
-          onSubmit={handleSubmit(isEditPage() ? updateItem : addNewItem)}
+          onSubmit={handleSubmit(
+            isEditPage() ? updateExistingItem : addNewItem,
+          )}
         >
           <div className={"itemForm__form__top"}>
             <div
@@ -645,7 +736,52 @@ const NewItemPage = ({ type }: IProps) => {
             )}
           </div>
         </form>
-        <div className={"itemForm__locale"}></div>
+        {type !== "about us" && (
+          <div className={"itemForm__locale"}>
+            {!isEditPage() ? (
+              <>
+                <div className={"itemForm__locale__title"}>
+                  Add already existing {type}
+                </div>
+                {otherAttractions?.length !== 0 ? (
+                  otherAttractions?.map((attraction) => {
+                    return (
+                      <div
+                        className={"itemForm__locale__add"}
+                        key={handleId(type, attraction)}
+                      >
+                        <div>{attraction.title}</div>
+                        <button
+                          type={"button"}
+                          onClick={() =>
+                            addExistingItem(handleId(type, attraction))
+                          }
+                        >
+                          <FaPlus />
+                          Add
+                        </button>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div>No other {type}</div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className={"itemForm__locale__title"}>Information</div>
+                <div className={"itemForm__locale__row"}>
+                  <span className={"itemForm__locale__row__desc"}>
+                    Last updated
+                  </span>
+                  <span className={"itemForm__locale__row__value"}>
+                    {formatDateString(editData?.updatedAt?.toString() ?? "")}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </Sidebar>
   );

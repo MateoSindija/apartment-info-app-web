@@ -7,7 +7,7 @@ import {
 } from "../interfaces/NewItemInterface";
 import { IApartment, INewApartment } from "@/interfaces/ApartmentIntefaces";
 
-const NumberOrString = z.union([
+export const NumberOrString = z.union([
   z.string(), // allows strings
   z.number().refine((value) => value >= 0, {
     message: "Value must be a number greater than or equal to 0",
@@ -59,4 +59,5 @@ export const NewApartmentSchema: ZodType<INewApartment> = z.object({
   address: z.string().min(2).max(200),
   lat: z.coerce.number().min(-90).max(90),
   lng: z.coerce.number().min(-90).max(90),
+  apartmentPassword: z.string().min(5).max(50),
 });

@@ -1,5 +1,6 @@
 import { IFirebaseTimestamp } from "./MessagesInterface";
 import { ILocation } from "@/interfaces/LocationInterface";
+import { IReservation } from "@/interfaces/ReservationInterface";
 
 export interface INewBasicWithPostion {
   title: string;
@@ -42,8 +43,9 @@ export interface INewDevice {
 
 export interface IReview {
   review: string;
-  timestamp: IFirebaseTimestamp;
-  id: string;
+  createdAt: Date;
+  reservation: IReservation;
+  reviewId: string;
   comfortRating: number;
   experienceRating: number;
   valueRating: number;

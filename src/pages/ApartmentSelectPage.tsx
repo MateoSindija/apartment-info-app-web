@@ -30,7 +30,7 @@ const ApartmentSelectPage = () => {
       </div>
       <div className={"apartmentList__list"}>
         {data?.apartments?.map((apartment) => {
-          return <ApartmentCard {...apartment} />;
+          return <ApartmentCard key={apartment.apartmentId} {...apartment} />;
         })}
         <button
           className={"apartmentList__add"}

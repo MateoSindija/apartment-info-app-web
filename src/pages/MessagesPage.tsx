@@ -1,76 +1,33 @@
 import { useEffect, useState } from "react";
 
 import Sidebar from "../layout/Sidebar";
-import { Button, Form } from "react-bootstrap";
-import { IMessage, IMessages } from "../interfaces/MessagesInterface";
-import {
-  addDoc,
-  collection,
-  getDocs,
-  orderBy,
-  query,
-} from "firebase/firestore";
-import Message from "../components/Message";
+import MessageSidebar from "@/components/MessageSidebar";
+import Conversation from "@/pages/Conversation";
 
 const MessagesPage = () => {
-  const [messages, setMessages] = useState<IMessages>({ allMessages: [] });
-  const [newMessage, setNewMessage] = useState("");
-
-  const getData = async () => {
-    const newUserMessages: IMessage[] = [];
-    const newOwnerMessages: IMessage[] = [];
-
-    // querySnapshotUser.docs.forEach((doc) => {
-    //   const data = doc.data() as IMessage;
-    //   newUserMessages.push({ ...data, id: doc.id, type: "user" });
-    // });
-    //
-    // querySnapshotOwner.docs.forEach((doc) => {
-    //   const data = doc.data() as IMessage;
-    //   newOwnerMessages.push({ ...data, id: doc.id, type: "owner" });
-    // });
-
-    const mergedMessages = [...newUserMessages, ...newOwnerMessages];
-
-    mergedMessages.sort(
-      (a: IMessage, b: IMessage) => a.timestamp.seconds - b.timestamp.seconds,
-    );
-
-    setMessages({ allMessages: mergedMessages });
-  };
-  useEffect(() => {
-    getData();
-  }, []);
-
-  const sendMessage = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (newMessage.length === 0) return;
-    // await addDoc(collectionRefOwner, {
-    //   message: newMessage,
-    //   timestamp: new Date(),
-    // });
-    setNewMessage("");
-    await getData();
-  };
-
+  const [reservationId, setReservationId] = useState<string | undefined>();
+  const [clientName, setClientName] = useState("");
+  const [isConversationClosed, setIsConversationClosed] = useState(false);
+  const [endsAt, setEndsAt] = useState<Date>();
   return (
     <Sidebar>
-      <div className="mb-2">Messages</div>
-      <div
-        className="w-100 mb-3 p-2"
-        style={{ maxHeight: "70vh", overflowY: "scroll" }}
+      <MessageSidebar
+        setReservationId={setReservationId}
+        setClientName={setClientName}
+        setIsConversationClosed={setIsConversationClosed}
+        setEndsAt={setEndsAt}
       >
-        {messages.allMessages.map((message) => {
-          return <Message key={message.id} {...message} />;
-        })}
-      </div>
-      <Form className="flex" onSubmit={sendMessage}>
-        <Form.Control
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-        />
-        <Button type="submit">Send</Button>
-      </Form>
+        <>
+          {reservationId && (
+            <Conversation
+              reservationId={reservationId}
+              clientName={clientName}
+              isConversationClosed={isConversationClosed}
+              endsAt={endsAt}
+            />
+          )}
+        </>
+      </MessageSidebar>
     </Sidebar>
   );
 };

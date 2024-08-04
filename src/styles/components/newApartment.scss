@@ -1,7 +1,7 @@
 .newApartment {
   display: flex;
   flex-direction: column;
-  width: 550px;
+  width: 100%;
 
   input {
     @include input;
@@ -17,8 +17,8 @@
   }
 
   label {
+    font-weight: 700;
     margin-bottom: 10px;
-    font-size: 15px;
   }
 
   &__buttons {

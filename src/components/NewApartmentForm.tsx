@@ -1,8 +1,11 @@
 import React, { useEffect } from "react";
-import { useAddApartmentsMutation } from "@/api/api";
+import {
+  useAddApartmentsMutation,
+  useUpdateApartmentMutation,
+} from "@/api/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { INewApartment } from "@/interfaces/ApartmentIntefaces";
+import { IApartment, INewApartment } from "@/interfaces/ApartmentIntefaces";
 import { NewApartmentSchema } from "@/schemas/NewItemSchemas";
 import { GoogleMap, MarkerF, useLoadScript } from "@react-google-maps/api";
 import {
@@ -11,11 +14,14 @@ import {
   OutputFormat,
   setDefaults,
 } from "react-geocode";
+import { da } from "date-fns/locale";
 
 interface IProps {
-  setIsModalOpen: (value: ((prevState: boolean) => boolean) | boolean) => void;
+  setIsModalOpen?: (value: ((prevState: boolean) => boolean) | boolean) => void;
+  data?: IApartment;
+  apartmentId?: string;
 }
-const NewApartmentForm = ({ setIsModalOpen }: IProps) => {
+const NewApartmentForm = ({ setIsModalOpen, data, apartmentId }: IProps) => {
   setDefaults({
     key: import.meta.env.VITE_GOOGLE_MAP_KEY ?? "", // Your API key here.
     language: "en",
@@ -26,6 +32,8 @@ const NewApartmentForm = ({ setIsModalOpen }: IProps) => {
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAP_KEY ?? "",
   });
   const [addApartment, { isLoading }] = useAddApartmentsMutation();
+  const [editApartment, { isLoading: isUpdating }] =
+    useUpdateApartmentMutation();
 
   const {
     register,
@@ -40,8 +48,11 @@ const NewApartmentForm = ({ setIsModalOpen }: IProps) => {
   } = useForm<INewApartment>({
     resolver: zodResolver(NewApartmentSchema),
     defaultValues: {
-      lat: 45.815,
-      lng: 15.9819,
+      lat: data ? data.location.coordinates[1] : 45.815,
+      lng: data ? data.location.coordinates[0] : 15.9819,
+      apartmentPassword: data ? data.apartmentPassword : "",
+      name: data ? data.name : "",
+      address: data ? data.address : "",
     },
   });
 
@@ -79,17 +90,28 @@ const NewApartmentForm = ({ setIsModalOpen }: IProps) => {
 
   const handleAddingNewApartment = async (data: INewApartment) => {
     await addApartment(data);
-    setIsModalOpen(false);
+    if (setIsModalOpen) setIsModalOpen(false);
+  };
+
+  const handleUpdatingApartment = async (data: INewApartment) => {
+    if (apartmentId) await editApartment({ data: data, id: apartmentId });
   };
 
   return (
     <form
       className={"newApartment"}
-      onSubmit={handleSubmit(handleAddingNewApartment)}
+      id={"apartmentForm"}
+      onSubmit={handleSubmit(
+        data ? handleUpdatingApartment : handleAddingNewApartment,
+      )}
     >
-      <div className={"newApartment__header"}>Add new apartment</div>
+      {setIsModalOpen && (
+        <div className={"newApartment__header"}>Add new apartment</div>
+      )}
       <label htmlFor="name">Apartment name</label>
       <input id={"name"} {...register("name")} />
+      <label htmlFor="password">Password for apartment </label>
+      <input id="password" {...register("apartmentPassword")} />
 
       <label htmlFor="address">Apartment address</label>
       <input id="address" {...register("address")} />
@@ -118,23 +140,25 @@ const NewApartmentForm = ({ setIsModalOpen }: IProps) => {
         </GoogleMap>
       )}
 
-      <div className={"newApartment__buttons"}>
-        <button
-          className={"newApartment__buttons__cancel"}
-          type="button"
-          disabled={isLoading}
-          onClick={() => setIsModalOpen(false)}
-        >
-          Cancel
-        </button>
-        <button
-          disabled={isLoading}
-          className={"newApartment__buttons__submit"}
-          type="submit"
-        >
-          Add apartment
-        </button>
-      </div>
+      {setIsModalOpen && (
+        <div className={"newApartment__buttons"}>
+          <button
+            className={"newApartment__buttons__cancel"}
+            type="button"
+            disabled={isLoading || isUpdating}
+            onClick={() => setIsModalOpen(false)}
+          >
+            Cancel
+          </button>
+          <button
+            disabled={isLoading || isUpdating}
+            className={"newApartment__buttons__submit"}
+            type="submit"
+          >
+            Add apartment
+          </button>
+        </div>
+      )}
     </form>
   );
 };

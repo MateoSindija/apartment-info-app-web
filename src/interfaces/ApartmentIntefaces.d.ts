@@ -7,6 +7,7 @@ export interface IApartment {
   address: string;
   createdAt: Date;
   updatedAt: Date;
+  apartmentPassword: string;
   location: ILocation;
 }
 
@@ -18,6 +19,7 @@ export interface IApartmentInfo {
   ownerId: string;
   createdAt: Date;
   updatedAt: Date;
+  apartmentPassword: string;
 }
 
 export interface INewApartment {
@@ -25,4 +27,5 @@ export interface INewApartment {
   address: string;
   lat: number;
   lng: number;
+  apartmentPassword: string;
 }

@@ -24,10 +24,15 @@ import {
   INewDevice,
   INewRestaurant,
   IRestaurant,
+  IReview,
   IShop,
   ISight,
 } from "@/interfaces/NewItemInterface";
 import { IAboutUs } from "@/interfaces/AboutUsInterface";
+import {
+  INewReservation,
+  IReservation,
+} from "@/interfaces/ReservationInterface";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: config.app.serverUrl,
@@ -68,7 +73,16 @@ export const api = createApi({
   reducerPath: "ownerApi",
   baseQuery: baseQueryWithReauth,
 
-  tagTypes: ["Restaurant", "Beach", "Device", "Sight", "Apartment", "Shop"],
+  tagTypes: [
+    "restaurant",
+    "beach",
+    "device",
+    "sight",
+    "apartment",
+    "shop",
+    "reservation",
+    "reviews",
+  ],
 
   endpoints: (builder) => ({
     //apartment info
@@ -76,7 +90,7 @@ export const api = createApi({
       query: (apartmentId) => ({
         url: `/apartment/${apartmentId}/info`,
       }),
-      providesTags: ["Apartment"],
+      providesTags: ["apartment"],
     }),
     //register
     register: builder.mutation<
@@ -106,7 +120,7 @@ export const api = createApi({
         url: `/apartment/list`,
         method: "GET",
       }),
-      providesTags: ["Apartment"],
+      providesTags: ["apartment"],
     }),
     //add apartment
     addApartments: builder.mutation<void, INewApartment>({
@@ -115,7 +129,16 @@ export const api = createApi({
         body: { ...apartment },
         method: "POST",
       }),
-      invalidatesTags: ["Apartment"],
+      invalidatesTags: ["apartment"],
+    }),
+
+    //get apartment reviews
+    getApartmentReviews: builder.query<IReview[], string>({
+      query: (apartmentId) => ({
+        url: `/apartment/${apartmentId}/reviews`,
+        method: "GET",
+      }),
+      providesTags: ["reviews"],
     }),
 
     //get apartment restaurant
@@ -124,7 +147,7 @@ export const api = createApi({
         url: `/apartment/${apartmentId}/restaurants`,
         method: "GET",
       }),
-      providesTags: ["Restaurant"],
+      providesTags: ["restaurant"],
     }),
     //get apartment beaches
     getBeachApartments: builder.query<IBeach[], string>({
@@ -132,7 +155,7 @@ export const api = createApi({
         url: `/apartment/${apartmentId}/beaches`,
         method: "GET",
       }),
-      providesTags: ["Beach"],
+      providesTags: ["beach"],
     }),
 
     //get apartment devices
@@ -141,7 +164,7 @@ export const api = createApi({
         url: `/apartment/${apartmentId}/devices`,
         method: "GET",
       }),
-      providesTags: ["Device"],
+      providesTags: ["device"],
     }),
 
     //get apartment shops
@@ -150,7 +173,7 @@ export const api = createApi({
         url: `/apartment/${apartmentId}/shops`,
         method: "GET",
       }),
-      providesTags: ["Shop"],
+      providesTags: ["shop"],
     }),
     //get apartment sights
     getSightApartments: builder.query<IShop[], string>({
@@ -158,7 +181,15 @@ export const api = createApi({
         url: `/apartment/${apartmentId}/sights`,
         method: "GET",
       }),
-      providesTags: ["Shop"],
+      providesTags: ["shop"],
+    }),
+    //get apartment reservations
+    getReservationApartments: builder.query<IReservation[], string>({
+      query: (apartmentId) => ({
+        url: `/apartment/${apartmentId}/reservations`,
+        method: "GET",
+      }),
+      providesTags: ["reservation"],
     }),
 
     //get beach
@@ -167,7 +198,51 @@ export const api = createApi({
         url: `/beach/${beachId}`,
         method: "GET",
       }),
-      providesTags: ["Beach"],
+      providesTags: ["beach"],
+    }),
+
+    //get all beaches from user
+    getAllUserBeachesInfo: builder.query<IBeach[], string>({
+      query: (apartmentId) => ({
+        url: `/beach/${apartmentId}/list`,
+        method: "GET",
+      }),
+      providesTags: ["beach"],
+    }),
+
+    //get all restaurants from user
+    getAllUserRestaurantsInfo: builder.query<IRestaurant[], string>({
+      query: (apartmentId) => ({
+        url: `/restaurant/${apartmentId}/list`,
+        method: "GET",
+      }),
+      providesTags: ["restaurant"],
+    }),
+
+    //get all sights from user
+    getAllUserSightsInfo: builder.query<ISight[], string>({
+      query: (apartmentId) => ({
+        url: `/sight/${apartmentId}/list`,
+        method: "GET",
+      }),
+      providesTags: ["sight"],
+    }),
+
+    //get all shops from user
+    getAllUserShopsInfo: builder.query<IShop[], string>({
+      query: (apartmentId) => ({
+        url: `/shop/${apartmentId}/list`,
+        method: "GET",
+      }),
+      providesTags: ["shop"],
+    }),
+    //get all devices from user
+    getAllUserDevicesInfo: builder.query<IDevice[], string>({
+      query: (apartmentId) => ({
+        url: `/device/${apartmentId}/list`,
+        method: "GET",
+      }),
+      providesTags: ["device"],
     }),
 
     //add beach
@@ -177,7 +252,7 @@ export const api = createApi({
         body: beach,
         method: "POST",
       }),
-      invalidatesTags: ["Beach"],
+      invalidatesTags: ["beach"],
     }),
 
     //get restaurant
@@ -186,7 +261,16 @@ export const api = createApi({
         url: `/restaurant/${restaurantId}`,
         method: "GET",
       }),
-      providesTags: ["Restaurant"],
+      providesTags: ["restaurant"],
+    }),
+
+    //get reservation
+    getReservationInfo: builder.query<IReservation, string>({
+      query: (reservationId) => ({
+        url: `/reservation/${reservationId}`,
+        method: "GET",
+      }),
+      providesTags: ["reservation"],
     }),
 
     //add restaurant
@@ -196,7 +280,17 @@ export const api = createApi({
         body: restaurant,
         method: "POST",
       }),
-      invalidatesTags: ["Restaurant"],
+      invalidatesTags: ["restaurant"],
+    }),
+
+    //add reservation
+    addReservation: builder.mutation<void, INewReservation>({
+      query: (reservation) => ({
+        url: `/reservation/new`,
+        body: { ...reservation },
+        method: "POST",
+      }),
+      invalidatesTags: ["reservation"],
     }),
 
     //get shop
@@ -205,7 +299,7 @@ export const api = createApi({
         url: `/shop/${shopId}`,
         method: "GET",
       }),
-      providesTags: ["Shop"],
+      providesTags: ["shop"],
     }),
     //add shop
     addShop: builder.mutation<void, FormData>({
@@ -214,7 +308,7 @@ export const api = createApi({
         body: shop,
         method: "POST",
       }),
-      invalidatesTags: ["Shop"],
+      invalidatesTags: ["shop"],
     }),
 
     //get sight
@@ -223,7 +317,7 @@ export const api = createApi({
         url: `/sight/${sightId}`,
         method: "GET",
       }),
-      providesTags: ["Sight"],
+      providesTags: ["sight"],
     }),
 
     //add sight
@@ -233,7 +327,7 @@ export const api = createApi({
         body: sight,
         method: "POST",
       }),
-      invalidatesTags: ["Sight"],
+      invalidatesTags: ["sight"],
     }),
 
     //get device
@@ -242,16 +336,16 @@ export const api = createApi({
         url: `/device/${deviceId}`,
         method: "GET",
       }),
-      providesTags: ["Device"],
+      providesTags: ["device"],
     }),
 
     //get about us
     getAboutUsInfo: builder.query<IAboutUs, string>({
       query: (apartmentId) => ({
-        url: `/about-us/${apartmentId}`,
+        url: `/apartment/${apartmentId}/aboutUs`,
         method: "GET",
       }),
-      providesTags: ["Apartment"],
+      providesTags: ["apartment"],
     }),
 
     //add device
@@ -261,48 +355,264 @@ export const api = createApi({
         body: device,
         method: "POST",
       }),
-      invalidatesTags: ["Device"],
+      invalidatesTags: ["device"],
+    }),
+
+    //add existing device
+    addExistingDevice: builder.mutation<
+      void,
+      { apartmentId: string; attractionId: string }
+    >({
+      query: ({ attractionId, apartmentId }) => ({
+        url: `/device/${attractionId}/existing/${apartmentId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["device"],
+    }),
+
+    //add existing device
+    addExistingBeach: builder.mutation<
+      void,
+      { apartmentId: string; attractionId: string }
+    >({
+      query: ({ attractionId, apartmentId }) => ({
+        url: `/beach/${attractionId}/existing/${apartmentId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["beach"],
+    }),
+
+    //add existing restaurant
+    addExistingRestaurant: builder.mutation<
+      void,
+      { apartmentId: string; attractionId: string }
+    >({
+      query: ({ attractionId, apartmentId }) => ({
+        url: `/restaurant/${attractionId}/existing/${apartmentId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["restaurant"],
+    }),
+
+    //add existing shop
+    addExistingShop: builder.mutation<
+      void,
+      { apartmentId: string; attractionId: string }
+    >({
+      query: ({ attractionId, apartmentId }) => ({
+        url: `/shop/${attractionId}/existing/${apartmentId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["shop"],
+    }),
+
+    //add existing sight
+    addExistingSight: builder.mutation<
+      void,
+      { apartmentId: string; attractionId: string }
+    >({
+      query: ({ attractionId, apartmentId }) => ({
+        url: `/sight/${attractionId}/existing/${apartmentId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["sight"],
+    }),
+
+    //add about us
+    addAboutUs: builder.mutation<void, FormData>({
+      query: (aboutUs) => ({
+        url: `/apartment/aboutUs`,
+        body: aboutUs,
+        method: "POST",
+      }),
+      invalidatesTags: ["apartment"],
+    }),
+
+    //update about us
+    updateAboutUs: builder.mutation<void, { data: FormData; id: string }>({
+      query: ({ data, id }) => ({
+        url: `/apartment/${id}/aboutUs`,
+        body: data,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["apartment"],
+    }),
+
+    //update apartment
+    updateApartment: builder.mutation<
+      void,
+      { data: INewApartment; id: string }
+    >({
+      query: ({ data, id }) => ({
+        url: `/apartment/${id}`,
+        body: data,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["apartment"],
     }),
 
     //update device
-    updateDevice: builder.mutation<
-      void,
-      { device: INewDevice; deviceId: string }
-    >({
-      query: ({ device, deviceId }) => ({
-        url: `/device/${deviceId}`,
-        body: device,
+    updateDevice: builder.mutation<void, { data: FormData; id: string }>({
+      query: ({ data, id }) => ({
+        url: `/device/${id}`,
+        body: data,
         method: "PATCH",
       }),
-      invalidatesTags: ["Device"],
+      invalidatesTags: ["device"],
     }),
 
     //update beach
-    updateBeach: builder.mutation<void, { beach: INewBeach; beachId: string }>({
-      query: ({ beach, beachId }) => ({
-        url: `/beach/${beachId}`,
-        body: { ...beach },
+    updateBeach: builder.mutation<void, { data: FormData; id: string }>({
+      query: ({ data, id }) => {
+        console.log(data);
+        return {
+          url: `/beach/${id}`,
+          body: data,
+          method: "PATCH",
+        };
+      },
+      invalidatesTags: ["beach"],
+    }),
+
+    //update restaurant
+    updateRestaurant: builder.mutation<void, { data: FormData; id: string }>({
+      query: ({ data, id }) => ({
+        url: `/restaurant/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["restaurant"],
+    }),
+    //update restaurant
+    updateReservation: builder.mutation<
+      void,
+      { data: INewReservation; id: string }
+    >({
+      query: ({ data, id }) => ({
+        url: `/reservation/${id}`,
+        method: "PATCH",
+        body: { ...data },
+      }),
+      invalidatesTags: ["reservation"],
+    }),
+
+    //update shop
+    updateShop: builder.mutation<void, { data: FormData; id: string }>({
+      query: ({ data, id }) => ({
+        url: `/shop/${id}`,
+        body: data,
         method: "PATCH",
       }),
-      invalidatesTags: ["Beach"],
+      invalidatesTags: ["shop"],
     }),
 
     //update sight
-    updateSight: builder.mutation<
-      void,
-      { sight: INewBasicWithPostion; sightId: string }
-    >({
-      query: ({ sight, sightId }) => ({
-        url: `/sight/${sightId}`,
-        body: { ...sight },
+    updateSight: builder.mutation<void, { data: FormData; id: string }>({
+      query: ({ data, id }) => ({
+        url: `/sight/${id}`,
+        body: data,
         method: "PATCH",
       }),
-      invalidatesTags: ["Sight"],
+      invalidatesTags: ["sight"],
+    }),
+
+    //delete shop
+    deleteShop: builder.mutation<
+      void,
+      { apartmentId: string; attractionId: string }
+    >({
+      query: ({ apartmentId, attractionId }) => ({
+        url: `/shop/${apartmentId}/${attractionId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["shop"],
+    }),
+    //delete restaurant
+    deleteRestaurant: builder.mutation<
+      void,
+      { apartmentId: string; attractionId: string }
+    >({
+      query: ({ apartmentId, attractionId }) => ({
+        url: `/restaurant/${apartmentId}/${attractionId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["restaurant"],
+    }),
+
+    //delete beach
+    deleteBeach: builder.mutation<
+      void,
+      { apartmentId: string; attractionId: string }
+    >({
+      query: ({ apartmentId, attractionId }) => ({
+        url: `/beach/${apartmentId}/${attractionId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["beach"],
+    }),
+    //delete sight
+    deleteSight: builder.mutation<
+      void,
+      { apartmentId: string; attractionId: string }
+    >({
+      query: ({ apartmentId, attractionId }) => ({
+        url: `/sight/${apartmentId}/${attractionId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["sight"],
+    }),
+    //delete reservation
+    deleteReservation: builder.mutation<void, string>({
+      query: (reservationId) => ({
+        url: `/reservation/${reservationId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["reservation"],
+    }),
+
+    //delete device
+    deleteDevice: builder.mutation<
+      void,
+      { apartmentId: string; attractionId: string }
+    >({
+      query: ({ apartmentId, attractionId }) => ({
+        url: `/device/${apartmentId}/${attractionId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["device"],
     }),
   }),
 });
 
 export const {
+  useUpdateApartmentMutation,
+  useAddExistingDeviceMutation,
+  useAddExistingSightMutation,
+  useAddExistingShopMutation,
+  useAddExistingRestaurantMutation,
+  useAddExistingBeachMutation,
+  useGetAllUserBeachesInfoQuery,
+  useGetAllUserRestaurantsInfoQuery,
+  useGetAllUserShopsInfoQuery,
+  useGetAllUserSightsInfoQuery,
+  useGetAllUserDevicesInfoQuery,
+  useGetApartmentReviewsQuery,
+  useDeleteReservationMutation,
+  useUpdateReservationMutation,
+  useGetReservationInfoQuery,
+  useAddReservationMutation,
+  useDeleteBeachMutation,
+  useDeleteRestaurantMutation,
+  useDeleteDeviceMutation,
+  useDeleteSightMutation,
+  useDeleteShopMutation,
+  useUpdateShopMutation,
+  useUpdateSightMutation,
+  useUpdateRestaurantMutation,
+  useUpdateBeachMutation,
+  useUpdateDeviceMutation,
+  useAddAboutUsMutation,
+  useUpdateAboutUsMutation,
   useGetAboutUsInfoQuery,
   useGetSightApartmentsQuery,
   useGetShopApartmentsQuery,
@@ -324,4 +634,5 @@ export const {
   useAddRestaurantMutation,
   useAddDeviceMutation,
   useAddShopMutation,
+  useGetReservationApartmentsQuery,
 } = api;

@@ -1,0 +1,39 @@
+.reservationForm {
+  width: 100%;
+  background-color: white;
+  @include generic-shadow;
+  border-radius: 6px;
+  padding: 20px 30px;
+  input {
+    @include input;
+    width: 300px;
+  }
+
+  label {
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  &__upper {
+    display: flex;
+    margin-bottom: 20px;
+
+    &__container {
+      display: flex;
+      flex-direction: column;
+      margin-right: 100px;
+    }
+  }
+
+  &__lower {
+    display: flex;
+    flex-direction: column;
+  }
+}
+.controlButtons {
+  display: flex;
+  &__delete {
+    margin-left: 15px;
+    background-color: red !important;
+  }
+}

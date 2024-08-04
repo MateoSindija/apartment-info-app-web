@@ -1,18 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import React from "react";
+import { useParams } from "react-router-dom";
 import Sidebar from "../layout/Sidebar";
-import { Button, ListGroup } from "react-bootstrap";
-import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
-import {
-  INewBasicWithPostion,
-  INewBeach,
-  INewDevice,
-  INewRestaurant,
-  PossibleInterfaces,
-} from "../interfaces/NewItemInterface";
-import { deleteObject, getStorage, ref } from "@firebase/storage";
 import { FaPlus } from "react-icons/fa";
 import {
+  useDeleteBeachMutation,
+  useDeleteDeviceMutation,
+  useDeleteRestaurantMutation,
+  useDeleteShopMutation,
+  useDeleteSightMutation,
   useGetBeachApartmentsQuery,
   useGetDeviceApartmentsQuery,
   useGetRestaurantApartmentsQuery,
@@ -20,6 +15,7 @@ import {
   useGetSightApartmentsQuery,
 } from "@/api/api";
 import AttractionList from "@/components/lists/AttractionList";
+import PageHeader from "@/components/PageHeader";
 
 interface IProps {
   type: "devices" | "sights" | "shops" | "restaurants" | "beaches";
@@ -49,19 +45,16 @@ const ListPage = ({ type }: IProps) => {
 
   return (
     <Sidebar>
-      <div className={"pageHeader"}>
-        <div className={"pageHeader__title"}>
-          {type[0].toUpperCase() + type.slice(1)}
-          <div className={"pageHeader__title__subHeader"}>
-            {data?.length} entries found
-          </div>
-        </div>
-
+      <PageHeader
+        title={type[0].toUpperCase() + type.slice(1)}
+        entriesNumber={data?.length}
+      >
         <a href={`/${apartmentId}/${type.toLowerCase()}/new`}>
           <FaPlus />
           Add new
         </a>
-      </div>
+      </PageHeader>
+
       <AttractionList data={data} type={type} />
     </Sidebar>
   );

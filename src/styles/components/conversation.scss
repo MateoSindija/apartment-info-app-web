@@ -1,0 +1,44 @@
+.conversation {
+  display: flex;
+  flex-direction: column;
+  height: 93vh; /* Full viewport height */
+  box-sizing: border-box;
+
+  &__client {
+    margin-bottom: 15px;
+    &__name {
+      font-size: 30px;
+      margin-bottom: 5px;
+    }
+
+    &__date {
+      color: $gray-500;
+    }
+  }
+
+  &__messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+    box-sizing: border-box;
+  }
+
+  &__input {
+    height: 50px;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+
+    input {
+      flex: 7;
+      @include input;
+    }
+
+    button {
+      flex: 1;
+      margin-left: 10px;
+      color: white;
+      @include button($primary-color);
+    }
+  }
+}

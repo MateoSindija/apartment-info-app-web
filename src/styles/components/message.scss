@@ -1,0 +1,20 @@
+.message {
+  display: flex;
+  border-radius: 12px;
+  padding: 6px 12px;
+  width: fit-content;
+  margin-bottom: 3px;
+  max-width: 50%;
+}
+
+.user {
+  color: white;
+  background-color: $primary-color;
+  margin-left: auto;
+}
+
+.client {
+  color: black;
+  background-color: $gray-300;
+  margin-right: auto;
+}
