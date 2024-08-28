@@ -29,10 +29,8 @@ export const NewRestaurantSchema: ZodType<INewRestaurant> = z.object({
   review: z.coerce.number().min(1).max(5),
   reviewAmount: z.coerce.number().min(0).max(10000),
   description: z.string().min(2).max(1000),
-  contacts: z.object({
-    email: z.string().email(),
-    number: z.string().min(2).max(50),
-  }),
+  emailContact: z.string().email(),
+  phoneContact: z.string().min(2).max(50),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
   imagesUrl: z.array(z.string()).optional(),

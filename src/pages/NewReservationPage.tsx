@@ -18,6 +18,8 @@ import {
 } from "@/api/api";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaTrash } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { TOAST_CLOSE_TIME_MS } from "@/utils/constants";
 
 const NewReservationPage = () => {
   const { apartmentId, reservationId } = useParams();
@@ -71,6 +73,16 @@ const NewReservationPage = () => {
   const handleAddReservation = async (data: INewReservation) => {
     try {
       await addReservation(data);
+      navigate(`/${apartmentId}/reservations`);
+      toast.success("Reservation added", {
+        position: "top-center",
+        autoClose: TOAST_CLOSE_TIME_MS,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } catch (e) {
       console.log(e);
     }
@@ -80,20 +92,38 @@ const NewReservationPage = () => {
     if (!reservationId) return;
     try {
       await updateReservation({ data: data, id: reservationId });
+      navigate(`/${apartmentId}/reservations`);
+      toast.success("Reservation updated", {
+        position: "top-center",
+        autoClose: TOAST_CLOSE_TIME_MS,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } catch (e) {
       console.log(e);
     }
-    navigate(`/${apartmentId}/reservations`);
   };
 
   const handleDelete = async () => {
     if (!reservationId) return;
     try {
       await deleteReservation(reservationId);
+      navigate(`/${apartmentId}/reservations`);
+      toast.success("Reservation deleted", {
+        position: "top-center",
+        autoClose: TOAST_CLOSE_TIME_MS,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } catch (e) {
       console.log(e);
     }
-    navigate(`/${apartmentId}/reservations`);
   };
 
   const getExcludedDates = () => {

@@ -129,7 +129,7 @@ const Sidebar = ({ children }: IProps) => {
             style={{ color: handleIconColor("reviews") }}
           >
             <MdRateReview color={handleIconColor("reviews")} size={ICON_SIZE} />
-            Reviews
+            Ratings
           </a>
 
           <a

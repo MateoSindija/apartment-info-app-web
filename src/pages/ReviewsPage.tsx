@@ -4,79 +4,155 @@ import PageHeader from "@/components/PageHeader";
 import { useParams } from "react-router-dom";
 import { useGetApartmentReviewsQuery } from "@/api/api";
 import { formatDateString } from "@/utils/functions";
-import { FaQuoteRight } from "react-icons/fa";
+import {
+  FaArrowDown,
+  FaArrowUp,
+  FaQuoteLeft,
+  FaQuoteRight,
+  FaStar,
+} from "react-icons/fa";
+import { Bar } from "react-chartjs-2";
+import { ChartData, ChartDataset, ChartOptions } from "chart.js";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+);
+
+const ICON_COLOR = "#FFC534";
 
 const ReviewsPage = () => {
   const { apartmentId } = useParams();
   if (!apartmentId) return null;
 
-  const { data: reviews } = useGetApartmentReviewsQuery(apartmentId);
+  const { data: reviewsSummary } = useGetApartmentReviewsQuery(apartmentId);
+  if (!reviewsSummary) return null;
+
+  const datasets: ChartDataset<"bar">[] = [
+    {
+      label: "Average Ratings",
+      data: [
+        reviewsSummary.avgComfort,
+        reviewsSummary.avgValue,
+        reviewsSummary.avgOverall,
+      ],
+      backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+      borderColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+      borderWidth: 1,
+    },
+  ];
+  const data: ChartData<"bar"> = {
+    labels: ["Comfort", "Value for money", "Overall experience"],
+    datasets: datasets,
+  };
+
+  const options: ChartOptions<"bar"> = {
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 5,
+      },
+    },
+  };
 
   return (
     <Sidebar>
-      <PageHeader title={"Reviews"} entriesNumber={reviews?.length} />
+      <PageHeader title={"Ratings"} />
       <>
-        {reviews?.length && (
+        <div className={"summaryRating"}>
+          <div className={"summaryRating__count"}>
+            <div className={"summaryRating__count__row"}>
+              <div className={"summaryRating__count__row__title"}>
+                Number of reviews
+              </div>
+              <div className={"summaryRating__count__row__number"}>
+                {reviewsSummary.reviews.length}
+              </div>
+              <div className={"summaryRating__count__row__change"}>
+                {reviewsSummary.totalReservationsCount} reservations
+              </div>
+            </div>
+            <div className={"summaryRating__count__row"}>
+              <div className={"summaryRating__count__row__title"}>
+                Average Rating
+              </div>
+              <div className={"summaryRating__count__row__number"}>
+                {reviewsSummary.avgRating.toFixed(2)}
+              </div>
+
+              <div className={"summaryRating__count__row__change"}>
+                {reviewsSummary.ratingChangePercentage >= 0 ? (
+                  <span
+                    className={"summaryRating__count__row__change__positive"}
+                  >
+                    <FaArrowUp color={"green"} />
+                    {`${reviewsSummary.ratingChangePercentage.toFixed(2)}% `}
+                  </span>
+                ) : (
+                  <span
+                    className={"summaryRating__count__row__change__negative"}
+                  >
+                    <FaArrowDown color={"red"} />
+                    {`${reviewsSummary.ratingChangePercentage.toFixed(2)}% `}
+                  </span>
+                )}
+                last year
+              </div>
+            </div>
+          </div>
+          <div className={"summaryRating__chart"}>
+            <Bar data={data} options={options} key={apartmentId} />
+          </div>
+        </div>
+        <div className={"reviewsHeader"}>Reviews</div>
+        {reviewsSummary?.reviews?.length && (
           <div className={"reviews"}>
-            {reviews.map((review) => {
+            {reviewsSummary.reviews.map((review) => {
               return (
                 <div key={review.reviewId} className={"reviews__review"}>
                   <div className={"reviews__review__header"}>
                     <span className={"reviews__review__header__client"}>
                       {review.reservation.clientName}
                     </span>
+                    <span className={"reviews__review__header__rating"}>
+                      {[...Array(review.comfortRating)].map((x, i) => (
+                        <FaStar key={i} color={ICON_COLOR} />
+                      ))}
+                      <span>Comfort</span>
+                    </span>
+                    <span className={"reviews__review__header__rating"}>
+                      {[...Array(review.valueRating)].map((x, i) => (
+                        <FaStar key={i} color={ICON_COLOR} />
+                      ))}
+                      <span>Value for money</span>
+                    </span>
+                    <span className={"reviews__review__header__rating"}>
+                      {[...Array(review.experienceRating)].map((x, i) => (
+                        <FaStar key={i} color={ICON_COLOR} />
+                      ))}
+                      <span>Overall experience</span>
+                    </span>
                     <span className={"reviews__review__header__date"}>
                       {formatDateString(review.createdAt.toString())}
                     </span>
                   </div>
-                  <div className={"reviews__review__ratings"}>
-                    <div className={"reviews__review__ratings__container"}>
-                      <div
-                        className={"reviews__review__ratings__container__type"}
-                      >
-                        Comfort
-                      </div>
-                      <div
-                        className={
-                          "reviews__review__ratings__container__rating"
-                        }
-                      >
-                        {review.comfortRating}/5
-                      </div>
-                    </div>
-                    <div className={"reviews__review__ratings__container"}>
-                      <div
-                        className={"reviews__review__ratings__container__type"}
-                      >
-                        Value for money
-                      </div>
-                      <div
-                        className={
-                          "reviews__review__ratings__container__rating"
-                        }
-                      >
-                        {review.valueRating}/5
-                      </div>
-                    </div>
-                    <div className={"reviews__review__ratings__container"}>
-                      <div
-                        className={"reviews__review__ratings__container__type"}
-                      >
-                        Overall
-                      </div>
-                      <div
-                        className={
-                          "reviews__review__ratings__container__rating"
-                        }
-                      >
-                        {review.experienceRating}/5
-                      </div>
-                    </div>
-                  </div>
                   {review.review.length && (
                     <div className={"reviews__review__text"}>
                       <div className={"reviews__review__text__icon"}>
-                        <FaQuoteRight size={20} color={"#adb5bd"} />
+                        <FaQuoteLeft size={20} color={"#6B6C6D"} />
                       </div>
                       <div className={"reviews__review__text__textBody"}>
                         {review.review}

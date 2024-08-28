@@ -6,7 +6,6 @@ import React, {
   useState,
 } from "react";
 import Sidebar from "../layout/Sidebar";
-import { Button, Form, ProgressBar, Toast } from "react-bootstrap";
 import {
   IBasic,
   IBeach,
@@ -67,6 +66,8 @@ import {
 } from "@/api/api";
 import { formatDateString, formatImageUrl } from "@/utils/functions";
 import PageHeader from "@/components/PageHeader";
+import { toast } from "react-toastify";
+import { TOAST_CLOSE_TIME_MS } from "@/utils/constants";
 
 interface IProps {
   type: "devices" | "sights" | "shops" | "restaurants" | "beaches" | "about us";
@@ -205,7 +206,7 @@ const NewItemPage = ({ type }: IProps) => {
         default:
           return { data: undefined };
       }
-    if (apartmentId) {
+    if (apartmentId && url.pathname.includes("aboutUs")) {
       return useGetAboutUsInfoQuery(apartmentId);
     }
     return { data: undefined };
@@ -246,6 +247,7 @@ const NewItemPage = ({ type }: IProps) => {
 
   useEffect(() => {
     if (editData) {
+      console.log(editData);
       setDocImgUrls(editData.imagesUrl ?? []);
       setData(editData);
     }
@@ -403,6 +405,23 @@ const NewItemPage = ({ type }: IProps) => {
 
   const updateExistingItem = async (updatedData: PossibleNewInterfaces) => {
     clearErrors();
+    if (type === "about us" && apartmentId !== undefined) {
+      await updateItem({
+        data: updateDocFields(updatedData, files, docImgUrls),
+        id: apartmentId,
+      });
+      toast.success(`About us updated`, {
+        position: "top-center",
+        autoClose: TOAST_CLOSE_TIME_MS,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      setFiles([]);
+      return;
+    }
 
     if (!id) return;
     if (getValues("titleImage") === undefined) return;
@@ -415,6 +434,15 @@ const NewItemPage = ({ type }: IProps) => {
       await updateItem({
         data: updateDocFields(updatedData, files, docImgUrls),
         id: id,
+      });
+      toast.success(`${type[0].toUpperCase() + type.slice(1, -1)} updated`, {
+        position: "top-center",
+        autoClose: TOAST_CLOSE_TIME_MS,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
     } catch (e) {
       console.log(e);
@@ -434,6 +462,15 @@ const NewItemPage = ({ type }: IProps) => {
 
     try {
       await addItem(newDocFields(data, files, apartmentId));
+      toast.success(`${type[0].toUpperCase() + type.slice(1, -1)} added`, {
+        position: "top-center",
+        autoClose: TOAST_CLOSE_TIME_MS,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } catch (e) {
       console.log(e);
     }
@@ -457,7 +494,6 @@ const NewItemPage = ({ type }: IProps) => {
     setValue("lat", e.latLng?.lat() ?? 0);
     setValue("lng", e.latLng?.lng() ?? 0);
   };
-
   return (
     <Sidebar>
       <PageHeader
@@ -682,11 +718,12 @@ const NewItemPage = ({ type }: IProps) => {
                     disabled={isSubmitting}
                     type="email"
                     placeholder="Email"
-                    {...register("contacts.email")}
+                    {...register("emailContact")}
                   />
-                  {"contacts" in errors && errors.contacts?.email?.message && (
+
+                  {"emailContact" in errors && errors.emailContact?.message && (
                     <div className="text-danger">
-                      {errors.contacts?.email?.message}
+                      {errors.emailContact?.message}
                     </div>
                   )}
                 </div>
@@ -696,13 +733,14 @@ const NewItemPage = ({ type }: IProps) => {
                     disabled={isSubmitting}
                     type="string"
                     placeholder="Phone number"
-                    {...register("contacts.number")}
+                    {...register("phoneContact")}
                   />
-                  {"contacts" in errors && errors.contacts?.number?.message && (
-                    <div className="text-danger">
-                      {errors.contacts?.number?.message}
-                    </div>
-                  )}
+                  {"phoneContact" in errors &&
+                    errors?.phoneContact?.message && (
+                      <div className="text-danger">
+                        {errors?.phoneContact?.message}
+                      </div>
+                    )}
                 </div>
               </>
             )}
@@ -778,6 +816,20 @@ const NewItemPage = ({ type }: IProps) => {
                     {formatDateString(editData?.updatedAt?.toString() ?? "")}
                   </span>
                 </div>
+                {editData && "apartments" in editData ? (
+                  <div className={"itemForm__locale__row"}>
+                    <span className={"itemForm__locale__row__desc"}>
+                      Displayed in apartments
+                    </span>
+                    <span className={"itemForm__locale__row__value"}>
+                      {editData.apartments?.map((apartment) => {
+                        return <div>{apartment.name}</div>;
+                      })}
+                    </span>
+                  </div>
+                ) : (
+                  <div></div>
+                )}
               </>
             )}
           </div>

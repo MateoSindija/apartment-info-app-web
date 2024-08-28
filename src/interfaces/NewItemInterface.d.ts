@@ -1,6 +1,7 @@
 import { IFirebaseTimestamp } from "./MessagesInterface";
 import { ILocation } from "@/interfaces/LocationInterface";
 import { IReservation } from "@/interfaces/ReservationInterface";
+import { IApartment } from "@/interfaces/ApartmentIntefaces";
 
 export interface INewBasicWithPostion {
   title: string;
@@ -17,6 +18,7 @@ export interface IBasic {
   titleImage: string;
   createdAt: string;
   updatedAt: string;
+  apartments?: IApartment[];
 }
 
 export interface INewBeach extends INewBasicWithPostion {
@@ -28,10 +30,8 @@ export interface INewRestaurant extends INewBasicWithPostion {
   review: number;
   reviewAmount: number;
   description: string;
-  contacts: {
-    email: string;
-    number: string;
-  };
+  emailContact: string;
+  phoneContact: string;
 }
 
 export interface INewDevice {
@@ -49,6 +49,16 @@ export interface IReview {
   comfortRating: number;
   experienceRating: number;
   valueRating: number;
+}
+
+export interface IApartmentReviewSummary {
+  reviews: IReview[];
+  avgComfort: number;
+  avgOverall: number;
+  avgValue: number;
+  avgRating: number;
+  ratingChangePercentage: number;
+  totalReservationsCount: number;
 }
 
 export interface IRestaurant extends IBasic {

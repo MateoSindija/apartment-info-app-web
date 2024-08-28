@@ -14,7 +14,9 @@ import {
   OutputFormat,
   setDefaults,
 } from "react-geocode";
+import { toast } from "react-toastify";
 import { da } from "date-fns/locale";
+import { TOAST_CLOSE_TIME_MS } from "@/utils/constants";
 
 interface IProps {
   setIsModalOpen?: (value: ((prevState: boolean) => boolean) | boolean) => void;
@@ -91,10 +93,28 @@ const NewApartmentForm = ({ setIsModalOpen, data, apartmentId }: IProps) => {
   const handleAddingNewApartment = async (data: INewApartment) => {
     await addApartment(data);
     if (setIsModalOpen) setIsModalOpen(false);
+    toast.success("Apartment added", {
+      position: "top-center",
+      autoClose: TOAST_CLOSE_TIME_MS,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
 
   const handleUpdatingApartment = async (data: INewApartment) => {
     if (apartmentId) await editApartment({ data: data, id: apartmentId });
+    toast.success("Apartment updated", {
+      position: "top-center",
+      autoClose: TOAST_CLOSE_TIME_MS,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
 
   return (
@@ -110,7 +130,7 @@ const NewApartmentForm = ({ setIsModalOpen, data, apartmentId }: IProps) => {
       )}
       <label htmlFor="name">Apartment name</label>
       <input id={"name"} {...register("name")} />
-      <label htmlFor="password">Password for apartment </label>
+      <label htmlFor="password">Password for client sign in </label>
       <input id="password" {...register("apartmentPassword")} />
 
       <label htmlFor="address">Apartment address</label>

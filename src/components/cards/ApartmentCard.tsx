@@ -1,19 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { IApartment } from "@/interfaces/ApartmentIntefaces";
-import { useLoadScript } from "@react-google-maps/api";
-import { fromLatLng } from "react-geocode";
-import { ILocation } from "@/interfaces/LocationInterface";
 import { MdApartment } from "react-icons/md";
 
-const ApartmentCard = ({
-  apartmentId,
-  location,
-  name,
-  ownerId,
-  createdAt,
-  updatedAt,
-  address,
-}: IApartment) => {
+const ApartmentCard = ({ apartmentId, name, address }: IApartment) => {
   return (
     <a className={"apartmentCard"} href={`/${apartmentId}/restaurants`}>
       <div className={"apartmentCard__frame"}>

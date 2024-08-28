@@ -18,8 +18,11 @@ import SignUpPage from "@/pages/SignUpPage";
 import ApartmentSelectPage from "@/pages/ApartmentSelectPage";
 import ReservationPage from "@/pages/ReservationPage";
 import NewReservationPage from "@/pages/NewReservationPage";
-import Sidebar from "@/layout/Sidebar";
 import ApartmentInfoPage from "@/pages/ApartmentInfoPage";
+import "react-toastify/dist/ReactToastify.min.css";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -136,6 +139,7 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
+        <ToastContainer />
         <RouterProvider router={router} />
       </PersistGate>
     </Provider>

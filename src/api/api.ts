@@ -17,6 +17,7 @@ import {
   INewApartment,
 } from "@/interfaces/ApartmentIntefaces";
 import {
+  IApartmentReviewSummary,
   IBeach,
   IDevice,
   INewBasicWithPostion,
@@ -133,7 +134,7 @@ export const api = createApi({
     }),
 
     //get apartment reviews
-    getApartmentReviews: builder.query<IReview[], string>({
+    getApartmentReviews: builder.query<IApartmentReviewSummary, string>({
       query: (apartmentId) => ({
         url: `/apartment/${apartmentId}/reviews`,
         method: "GET",

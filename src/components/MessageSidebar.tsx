@@ -27,7 +27,10 @@ const MessageSidebar = ({
       const startDate = new Date(reservation.startDate).toLocaleDateString();
       const endDate = new Date(reservation.endDate).toLocaleDateString();
       const now = new Date().toLocaleDateString();
-      return startDate <= now && endDate >= now;
+      return (
+        new Date(startDate) <= new Date(now) &&
+        new Date(endDate) >= new Date(now)
+      );
     });
   }, [reservationData]);
 
@@ -43,7 +46,7 @@ const MessageSidebar = ({
     const now = new Date().toLocaleDateString();
     return reservationData?.filter((reservation) => {
       const endDate = new Date(reservation.endDate).toLocaleDateString();
-      return endDate < now;
+      return new Date(endDate) < new Date(now);
     });
   }, [reservationData]);
 
