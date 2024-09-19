@@ -1,0 +1,93 @@
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 30px;
+
+  &__title {
+    font-weight: 700;
+    font-size: 25px;
+
+    &__subHeader {
+      margin-top: 5px;
+      font-weight: 400;
+      color: $gray-500;
+      font-size: 15px;
+    }
+  }
+
+  a,
+  button {
+    text-decoration: none;
+    padding: 10px 15px;
+    color: white;
+    text-transform: none !important;
+    @include button($primary-color);
+
+    display: flex;
+    align-items: center;
+
+    svg {
+      margin-right: 10px;
+    }
+  }
+}
+
+.listPage {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 6px;
+  @include generic-shadow;
+  padding: 20px 30px;
+
+  &__header {
+    display: flex;
+    text-transform: uppercase;
+    font-size: 15px;
+    color: $gray-500;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid $gray-300;
+
+    &__title {
+      flex: 10;
+    }
+    &__date {
+      flex: 10;
+    }
+    &__controls {
+      flex: 2;
+    }
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid $gray-300;
+
+    &__title {
+      flex: 10;
+    }
+    &__date {
+      flex: 10;
+    }
+    &__controls {
+      display: flex;
+      gap: 30px;
+      flex: 2;
+
+      button,
+      a {
+        border-radius: 50%;
+        padding: 7px;
+        border: none;
+        @include button(white);
+      }
+    }
+  }
+}

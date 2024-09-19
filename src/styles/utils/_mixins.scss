@@ -1,0 +1,67 @@
+@mixin ripple-effect($background-color) {
+  background-position: center;
+  transition: background 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    background: darken($background-color, 10%)
+      radial-gradient(circle, transparent 1%, darken($background-color, 10%) 1%)
+      center/15000%;
+  }
+
+  &:active {
+    background-color: $background-color;
+    background-size: 100%;
+    transition: background 0s;
+  }
+}
+@mixin generic-shadow() {
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+@mixin input() {
+  border: 1px solid $gray-300;
+  padding: 8px 6px;
+  font-family: "Poppins", sans-serif;
+  border-radius: 3px;
+  font-size: 13px;
+
+  &:invalid {
+    border: 1px solid red;
+  }
+
+  &:hover {
+    cursor: auto;
+    background-color: $anti-flash-white;
+  }
+
+  &:focus {
+    outline: none !important;
+    border: 2px solid #c2c1c1 !important;
+  }
+
+  &::placeholder {
+    color: #adadad;
+    font-family: "Poppins", sans-serif;
+  }
+}
+
+@mixin button($bg) {
+  background: $bg;
+  border: none;
+  text-transform: uppercase;
+
+  @include ripple-effect($bg);
+  font-family: "Poppins", sans-serif;
+
+  &:disabled {
+    cursor: default;
+    background: lighten($bg, 20%) !important;
+    &:hover {
+      background: lighten($bg, 20%) !important;
+    }
+    &:active {
+      background: lighten($bg, 20%) !important;
+    }
+  }
+}

@@ -1,0 +1,34 @@
+// Base
+@import "base/_typography";
+@import "base/_reset";
+@import "base/_colors";
+
+// Sidebar
+@import "layout/sidebar";
+// Components
+@import "components/signIn";
+@import "components/signUp";
+@import "components/apartmentList";
+@import "components/modal";
+@import "components/newApartment";
+@import "components/apartmentCard";
+@import "components/list";
+@import "components/newItemForm";
+@import "components/calendar";
+@import "components/newReservationPage";
+@import "components/messageSidebar";
+@import "components/conversation";
+@import "components/message";
+@import "components/review";
+@import "components/apartmentInfo";
+
+// Utils
+@import "utils/_variables";
+@import "utils/_mixins";
+@import "utils/_functions";
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif !important;
+}
