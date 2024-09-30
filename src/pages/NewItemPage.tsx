@@ -316,6 +316,11 @@ const NewItemPage = ({ type }: IProps) => {
     }
 
     for (const key in data) {
+      if("location" in data) {
+        setValue("lat", data.location.coordinates[1])
+        setValue("lng", data.location.coordinates[0])
+      }
+
       if (data.hasOwnProperty(key)) {
         setValue(
           key as keyof PossibleInterfaces,
@@ -324,6 +329,7 @@ const NewItemPage = ({ type }: IProps) => {
       }
     }
   };
+
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const images = filterImageFiles(acceptedFiles);
@@ -462,7 +468,7 @@ const NewItemPage = ({ type }: IProps) => {
 
     try {
       await addItem(newDocFields(data, files, apartmentId));
-      toast.success(`${type[0].toUpperCase() + type.slice(1, -1)} added`, {
+      toast.success(type === "beaches" ? 'Beach added' : `${type[0].toUpperCase() + type.slice(1, -1)} added`, {
         position: "top-center",
         autoClose: TOAST_CLOSE_TIME_MS,
         hideProgressBar: false,
@@ -591,6 +597,7 @@ const NewItemPage = ({ type }: IProps) => {
                     >
                       <img
                         src={URL.createObjectURL(file)}
+                        alt={"placeholder"}
                         width="auto"
                         height="100px"
                       />
@@ -822,8 +829,8 @@ const NewItemPage = ({ type }: IProps) => {
                       Displayed in apartments
                     </span>
                     <span className={"itemForm__locale__row__value"}>
-                      {editData.apartments?.map((apartment) => {
-                        return <div>{apartment.name}</div>;
+                      {editData.apartments?.map((apartment, index) => {
+                        return <div key={index}>{apartment.name}</div>;
                       })}
                     </span>
                   </div>

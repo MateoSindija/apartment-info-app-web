@@ -41,6 +41,7 @@ const ReviewsPage = () => {
   const { data: reviewsSummary } = useGetApartmentReviewsQuery(apartmentId);
   if (!reviewsSummary) return null;
 
+
   const datasets: ChartDataset<"bar">[] = [
     {
       label: "Average Ratings",
@@ -90,7 +91,7 @@ const ReviewsPage = () => {
                 Average Rating
               </div>
               <div className={"summaryRating__count__row__number"}>
-                {reviewsSummary.avgRating.toFixed(2)}
+                {reviewsSummary.avgRating?.toFixed(2)}
               </div>
 
               <div className={"summaryRating__count__row__change"}>
@@ -118,7 +119,7 @@ const ReviewsPage = () => {
           </div>
         </div>
         <div className={"reviewsHeader"}>Reviews</div>
-        {reviewsSummary?.reviews?.length && (
+        {reviewsSummary?.reviews && (
           <div className={"reviews"}>
             {reviewsSummary.reviews.map((review) => {
               return (

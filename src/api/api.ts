@@ -150,7 +150,7 @@ export const api = createApi({
       }),
       providesTags: ["restaurant"],
     }),
-    //get apartment beaches
+    //get apartment beach
     getBeachApartments: builder.query<IBeach[], string>({
       query: (apartmentId) => ({
         url: `/apartment/${apartmentId}/beaches`,
@@ -202,7 +202,7 @@ export const api = createApi({
       providesTags: ["beach"],
     }),
 
-    //get all beaches from user
+    //get all beach from user
     getAllUserBeachesInfo: builder.query<IBeach[], string>({
       query: (apartmentId) => ({
         url: `/beach/${apartmentId}/list`,
