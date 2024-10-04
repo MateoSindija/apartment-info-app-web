@@ -30,9 +30,11 @@
 
         select,
         input {
+          line-height: 15px;
           @include input;
           width: 100% !important;
         }
+
       }
 
       &__dropzone {
@@ -73,6 +75,7 @@
         &__container {
           display: flex;
           flex-direction: column;
+
           &__delete {
             color: white;
             padding: 10px;
@@ -100,10 +103,13 @@
         textarea {
           @include input;
           width: 100% !important;
+          font-size: 15px;
+          line-height: 27px;
         }
       }
     }
   }
+
   &__locale {
     border-radius: 6px;
     @include generic-shadow;
