@@ -16,7 +16,6 @@ const Modal = ({ children, setIsModalOpen, isModalOpen }: IProps) => {
 
     useDetectRef(ref, () => {
         setIsModalOpen(false);
-        useDisableBodyScroll(false);
     });
 
     return (
