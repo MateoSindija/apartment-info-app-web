@@ -121,6 +121,7 @@
             gap: 10px;
         }
 
+        .reviews__review__text,
         &__text {
             display: flex;
             text-align: justify;
@@ -130,6 +131,7 @@
             }
 
             &__textBody {
+                margin-bottom: 10px;
                 color: $gray-600;
             }
         }

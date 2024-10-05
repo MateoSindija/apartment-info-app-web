@@ -225,6 +225,7 @@ const ReviewsPage = () => {
                                                 (image, index) => {
                                                     return (
                                                         <img
+                                                            key={index}
                                                             src={formatImageUrl(
                                                                 image
                                                             )}
