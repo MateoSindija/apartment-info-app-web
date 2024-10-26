@@ -4,8 +4,8 @@ import React, {
     useMemo,
     useRef,
     useState,
-} from "react";
-import Sidebar from "../layout/Sidebar";
+} from 'react';
+import Sidebar from '../layout/Sidebar';
 import {
     IBasic,
     IBeach,
@@ -17,23 +17,23 @@ import {
     IRestaurant,
     IShop,
     ISight,
-} from "@/interfaces/NewItemInterface";
-import {useForm} from "react-hook-form";
+} from '@/interfaces/NewItemInterface';
+import { useForm } from 'react-hook-form';
 import {
     NewBeachSchema,
     NewDeviceSchema,
     NewItemBasicSchema,
     NewRestaurantSchema,
-} from "@/schemas/NewItemSchemas";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {ZodType} from "zod";
-import {GoogleMap, MarkerF, useLoadScript} from "@react-google-maps/api";
-import {useLocation, useParams} from "react-router-dom";
-import {IAboutUs, INewAboutUs} from "@/interfaces/AboutUsInterface";
-import {AboutUsSchema} from "@/schemas/AboutUsSchema";
-import {FaCheck, FaPlus} from "react-icons/fa6";
-import {useDropzone} from "react-dropzone";
-import {RiImageAddFill} from "react-icons/ri";
+} from '@/schemas/NewItemSchemas';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ZodType } from 'zod';
+import { GoogleMap, MarkerF, useLoadScript } from '@react-google-maps/api';
+import { useLocation, useParams } from 'react-router-dom';
+import { IAboutUs, INewAboutUs } from '@/interfaces/AboutUsInterface';
+import { AboutUsSchema } from '@/schemas/AboutUsSchema';
+import { FaCheck, FaPlus } from 'react-icons/fa6';
+import { useDropzone } from 'react-dropzone';
+import { RiImageAddFill } from 'react-icons/ri';
 import {
     useAddAboutUsMutation,
     useAddBeachMutation,
@@ -63,14 +63,20 @@ import {
     useUpdateRestaurantMutation,
     useUpdateShopMutation,
     useUpdateSightMutation,
-} from "@/api/api";
-import {formatDateString, formatImageUrl} from "@/utils/functions";
-import PageHeader from "@/components/PageHeader";
-import {toast} from "react-toastify";
-import {TOAST_CLOSE_TIME_MS} from "@/utils/constants";
+} from '@/api/api';
+import { formatDateString, formatImageUrl } from '@/utils/functions';
+import PageHeader from '@/components/PageHeader';
+import { toast } from 'react-toastify';
+import { TOAST_CLOSE_TIME_MS } from '@/utils/constants';
 
 interface IProps {
-    type: "devices" | "sights" | "shops" | "restaurants" | "beaches" | "about us";
+    type:
+        | 'devices'
+        | 'sights'
+        | 'shops'
+        | 'restaurants'
+        | 'beaches'
+        | 'about us';
 }
 
 type PossibleInterfaces =
@@ -89,30 +95,30 @@ type PossibleNewInterfaces =
     | INewAboutUs;
 
 const ICON_SIZE = 50;
-const ICON_COLOR = "#adb5bd";
+const ICON_COLOR = '#adb5bd';
 const handleId = (
-    type: IProps["type"],
-    data: IRestaurant | IBeach | IDevice | ISight | IShop,
+    type: IProps['type'],
+    data: IRestaurant | IBeach | IDevice | ISight | IShop
 ) => {
-    if ("restaurantId" in data) {
+    if ('restaurantId' in data) {
         return data.restaurantId;
-    } else if ("beachId" in data) {
+    } else if ('beachId' in data) {
         return data.beachId;
-    } else if ("deviceId" in data) {
+    } else if ('deviceId' in data) {
         return data.deviceId;
-    } else if ("sightId" in data) {
+    } else if ('sightId' in data) {
         return data.sightId;
-    } else if ("shopId" in data) {
+    } else if ('shopId' in data) {
         return data.shopId;
     } else {
-        return "";
+        return '';
     }
 };
 
 const newDocFields = (
     docData: PossibleNewInterfaces,
     files: File[],
-    apartmentId: string,
+    apartmentId: string
 ) => {
     const formData = new FormData();
 
@@ -122,7 +128,7 @@ const newDocFields = (
             const value = docData[typedKey];
 
             if (value !== undefined) {
-                if (typeof value === "string" || typeof value === "number") {
+                if (typeof value === 'string' || typeof value === 'number') {
                     formData.append(typedKey, value.toString());
                 }
             }
@@ -131,11 +137,11 @@ const newDocFields = (
 
     // Handle files
     files.forEach((file) => {
-        formData.append("images", file);
+        formData.append('images', file);
     });
 
     // Append apartmentId separately as it's always a string
-    formData.append("apartmentId", apartmentId);
+    formData.append('apartmentId', apartmentId);
 
     return formData;
 };
@@ -143,7 +149,7 @@ const newDocFields = (
 const updateDocFields = (
     docData: PossibleNewInterfaces,
     files: File[] | undefined,
-    docImgUrls: string[] | undefined,
+    docImgUrls: string[] | undefined
 ) => {
     const formData = new FormData();
 
@@ -167,78 +173,78 @@ const updateDocFields = (
 
     if (files) {
         files.forEach((file) => {
-            formData.append("images", file);
+            formData.append('images', file);
         });
     }
 
     return formData;
 };
 
-const NewItemPage = ({type}: IProps) => {
-    const {isLoaded} = useLoadScript({
-        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAP_KEY ?? "",
+const NewItemPage = ({ type }: IProps) => {
+    const { isLoaded } = useLoadScript({
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAP_KEY ?? '',
     });
     const formRef = useRef(null);
     const [data, setData] = useState<PossibleNewInterfaces>();
     const [files, setFiles] = useState<File[] | undefined>();
     const [docImgUrls, setDocImgUrls] = useState<string[] | undefined>();
     const url = useLocation();
-    const {id, apartmentId} = useParams();
+    const { id, apartmentId } = useParams();
 
     const handleData = (
-        type: IProps["type"],
+        type: IProps['type'],
         id: string | undefined,
-        apartmentId: string,
+        apartmentId: string
     ) => {
         if (id)
             switch (type) {
-                case "beaches":
+                case 'beaches':
                     return useGetBeachInfoQuery(id);
-                case "restaurants":
+                case 'restaurants':
                     return useGetRestaurantInfoQuery(id);
-                case "devices":
+                case 'devices':
                     return useGetDeviceInfoQuery(id);
-                case "sights":
+                case 'sights':
                     return useGetSightInfoQuery(id);
-                case "shops":
+                case 'shops':
                     return useGetShopInfoQuery(id);
 
                 default:
-                    return {data: undefined};
+                    return { data: undefined };
             }
-        if (apartmentId && url.pathname.includes("aboutUs")) {
+        if (apartmentId && url.pathname.includes('aboutUs')) {
             return useGetAboutUsInfoQuery(apartmentId);
         }
-        return {data: undefined};
+        return { data: undefined };
     };
     const handleGetAttractionsFromOtherApartments = (
-        type: IProps["type"],
+        type: IProps['type'],
         apartmentId: string,
-        id: string | undefined,
+        id: string | undefined
     ) => {
         if (!id)
             switch (type) {
-                case "beaches":
+                case 'beaches':
                     return useGetAllUserBeachesInfoQuery(apartmentId);
-                case "restaurants":
+                case 'restaurants':
                     return useGetAllUserRestaurantsInfoQuery(apartmentId);
-                case "shops":
+                case 'shops':
                     return useGetAllUserShopsInfoQuery(apartmentId);
-                case "sights":
+                case 'sights':
                     return useGetAllUserSightsInfoQuery(apartmentId);
-                case "devices":
+                case 'devices':
                     return useGetAllUserDevicesInfoQuery(apartmentId);
                 default:
-                    return {data: undefined};
+                    return { data: undefined };
             }
 
-        return {data: undefined};
+        return { data: undefined };
     };
-    const {data: editData} = handleData(type, id, apartmentId ?? "");
-    const {data: otherAttractions} = handleGetAttractionsFromOtherApartments(
+    const { data: editData } = handleData(type, id, apartmentId ?? '');
+    const { data: otherAttractions } = handleGetAttractionsFromOtherApartments(
         type,
-        apartmentId ?? "",
-        id,
+        apartmentId ?? '',
+        id
     );
 
     const isEditPage = () => {
@@ -247,56 +253,55 @@ const NewItemPage = ({type}: IProps) => {
 
     useEffect(() => {
         if (editData) {
-            console.log(editData);
             setDocImgUrls(editData.imagesUrl ?? []);
             setData(editData);
         }
         getDefaultValues(editData);
     }, [url, editData]);
 
-    const handleAddItem = (type: IProps["type"]) => {
+    const handleAddItem = (type: IProps['type']) => {
         switch (type) {
-            case "about us":
+            case 'about us':
                 return useAddAboutUsMutation();
-            case "sights":
+            case 'sights':
                 return useAddSightMutation();
-            case "beaches":
+            case 'beaches':
                 return useAddBeachMutation();
-            case "devices":
+            case 'devices':
                 return useAddDeviceMutation();
-            case "restaurants":
+            case 'restaurants':
                 return useAddRestaurantMutation();
-            case "shops":
+            case 'shops':
                 return useAddShopMutation();
         }
     };
-    const handleUpdateItem = (type: IProps["type"]) => {
+    const handleUpdateItem = (type: IProps['type']) => {
         switch (type) {
-            case "about us":
+            case 'about us':
                 return useUpdateAboutUsMutation();
-            case "sights":
+            case 'sights':
                 return useUpdateSightMutation();
-            case "beaches":
+            case 'beaches':
                 return useUpdateBeachMutation();
-            case "devices":
+            case 'devices':
                 return useUpdateDeviceMutation();
-            case "restaurants":
+            case 'restaurants':
                 return useUpdateRestaurantMutation();
-            case "shops":
+            case 'shops':
                 return useUpdateShopMutation();
         }
     };
-    const handleAddExistingItem = (type: IProps["type"]) => {
+    const handleAddExistingItem = (type: IProps['type']) => {
         switch (type) {
-            case "devices":
+            case 'devices':
                 return useAddExistingDeviceMutation();
-            case "sights":
+            case 'sights':
                 return useAddExistingSightMutation();
-            case "shops":
+            case 'shops':
                 return useAddExistingShopMutation();
-            case "restaurants":
+            case 'restaurants':
                 return useAddExistingRestaurantMutation();
-            case "beaches":
+            case 'beaches':
                 return useAddExistingBeachMutation();
             default:
                 return useAddExistingDeviceMutation();
@@ -309,22 +314,21 @@ const NewItemPage = ({type}: IProps) => {
 
     const getDefaultValues = (data: PossibleInterfaces | undefined) => {
         if (!data) {
-            setValue("terrainType", "gravel");
-            setValue("lat", 45.3271);
-            setValue("lng", 14.4422);
+            setValue('terrainType', 'gravel');
+            setValue('lat', 45.3271);
+            setValue('lng', 14.4422);
             return;
         }
 
-
         for (const key in data) {
-            if ("location" in data) {
-                setValue("lat", data.location.coordinates[1])
-                setValue("lng", data.location.coordinates[0])
+            if ('location' in data) {
+                setValue('lat', data.location.coordinates[1]);
+                setValue('lng', data.location.coordinates[0]);
             }
             if (data.hasOwnProperty(key)) {
                 setValue(
                     key as keyof PossibleInterfaces,
-                    data[key as keyof PossibleInterfaces],
+                    data[key as keyof PossibleInterfaces]
                 );
             }
         }
@@ -336,25 +340,25 @@ const NewItemPage = ({type}: IProps) => {
             if (images.length === 0) {
                 if (images[0]) {
                     setFiles([images[0]]);
-                    setValue("titleImage", 0);
+                    setValue('titleImage', 0);
                 }
             } else {
-                setFiles([...images]);
+                setFiles((prevState) => [...(prevState || []), ...images]);
             }
         }
     }, []);
-    const {getRootProps, getInputProps, isDragActive} = useDropzone({
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         maxFiles: 20,
         accept: {
-            "image/*": [".jpeg", ".png", ".webp"],
+            'image/*': ['.jpeg', '.png', '.webp'],
         },
     });
 
     const {
         register,
         handleSubmit,
-        formState: {errors, isSubmitting},
+        formState: { errors, isSubmitting },
         setError,
         setValue,
         watch,
@@ -366,23 +370,23 @@ const NewItemPage = ({type}: IProps) => {
     });
 
     const textareaRegisterProps =
-        type !== "about us" ? register("description") : register("aboutUs");
+        type !== 'about us' ? register('description') : register('aboutUs');
     const titleRegisterProps =
-        type !== "about us" ? register("title") : register("moto");
+        type !== 'about us' ? register('title') : register('moto');
 
     function handleSchemaType() {
         switch (type) {
-            case "beaches":
+            case 'beaches':
                 return NewBeachSchema;
-            case "restaurants":
+            case 'restaurants':
                 return NewRestaurantSchema;
-            case "shops":
+            case 'shops':
                 return NewItemBasicSchema;
-            case "sights":
+            case 'sights':
                 return NewItemBasicSchema;
-            case "devices":
+            case 'devices':
                 return NewDeviceSchema;
-            case "about us":
+            case 'about us':
                 return AboutUsSchema;
             default:
                 return NewRestaurantSchema;
@@ -396,7 +400,7 @@ const NewItemPage = ({type}: IProps) => {
             for (let i = 0; i < fileArray.length; i++) {
                 const file = fileArray[i];
 
-                if (file && file.type.startsWith("image/")) {
+                if (file && file.type.startsWith('image/')) {
                     imageFiles.push(file);
                 }
             }
@@ -405,18 +409,20 @@ const NewItemPage = ({type}: IProps) => {
     }
 
     const deleteImageFromStorage = async (imgUrl: string) => {
-        setDocImgUrls((prevState) => prevState?.filter((url) => url !== imgUrl));
+        setDocImgUrls((prevState) =>
+            prevState?.filter((url) => url !== imgUrl)
+        );
     };
 
     const updateExistingItem = async (updatedData: PossibleNewInterfaces) => {
         clearErrors();
-        if (type === "about us" && apartmentId !== undefined) {
+        if (type === 'about us' && apartmentId !== undefined) {
             await updateItem({
                 data: updateDocFields(updatedData, files, docImgUrls),
                 id: apartmentId,
             });
             toast.success(`About us updated`, {
-                position: "top-center",
+                position: 'top-center',
                 autoClose: TOAST_CLOSE_TIME_MS,
                 hideProgressBar: false,
                 closeOnClick: true,
@@ -429,9 +435,9 @@ const NewItemPage = ({type}: IProps) => {
         }
 
         if (!id) return;
-        if (getValues("titleImage") === undefined) return;
+        if (getValues('titleImage') === undefined) return;
         if (files === undefined && docImgUrls === undefined) {
-            setError("root", {message: "Upload at least one image"});
+            setError('root', { message: 'Upload at least one image' });
             return;
         }
 
@@ -440,15 +446,18 @@ const NewItemPage = ({type}: IProps) => {
                 data: updateDocFields(updatedData, files, docImgUrls),
                 id: id,
             });
-            toast.success(`${type[0].toUpperCase() + type.slice(1, -1)} updated`, {
-                position: "top-center",
-                autoClose: TOAST_CLOSE_TIME_MS,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            toast.success(
+                `${type[0].toUpperCase() + type.slice(1, -1)} updated`,
+                {
+                    position: 'top-center',
+                    autoClose: TOAST_CLOSE_TIME_MS,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                }
+            );
         } catch (e) {
             console.log(e);
         }
@@ -459,23 +468,26 @@ const NewItemPage = ({type}: IProps) => {
         clearErrors();
 
         if (!apartmentId) return;
-        if (getValues("titleImage") === undefined) return;
+        if (getValues('titleImage') === undefined) return;
         if (!files) {
-            setError("root", {message: "Upload at least one image"});
+            setError('root', { message: 'Upload at least one image' });
             return;
         }
 
         try {
             await addItem(newDocFields(data, files, apartmentId));
-            toast.success(`${type[0].toUpperCase() + type.slice(1, -1)} added`, {
-                position: "top-center",
-                autoClose: TOAST_CLOSE_TIME_MS,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            toast.success(
+                `${type[0].toUpperCase() + type.slice(1, -1)} added`,
+                {
+                    position: 'top-center',
+                    autoClose: TOAST_CLOSE_TIME_MS,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                }
+            );
         } catch (e) {
             console.log(e);
         }
@@ -496,104 +508,125 @@ const NewItemPage = ({type}: IProps) => {
     };
 
     const handleMapClick = (e: google.maps.MapMouseEvent) => {
-        setValue("lat", e.latLng?.lat() ?? 0);
-        setValue("lng", e.latLng?.lng() ?? 0);
+        setValue('lat', e.latLng?.lat() ?? 0);
+        setValue('lng', e.latLng?.lng() ?? 0);
     };
     return (
         <Sidebar>
             <PageHeader
-                title={isEditPage() ? `Edit ${type} entry` : `Add new ${type} entry`}
-            >
+                title={
+                    isEditPage()
+                        ? `Edit ${type} entry`
+                        : `Add new ${type} entry`
+                }>
                 {isEditPage() ? (
-                    <button type="submit" form={"itemForm"}>
-                        <FaCheck/>
+                    <button type="submit" form={'itemForm'}>
+                        <FaCheck />
                         Save
                     </button>
                 ) : (
-                    <button type="submit" form={"itemForm"}>
-                        <FaPlus/>
+                    <button type="submit" form={'itemForm'}>
+                        <FaPlus />
                         Add
                     </button>
                 )}
             </PageHeader>
-            <div className={"itemForm"}>
+            <div className={'itemForm'}>
                 <form
-                    id={"itemForm"}
-                    className={"itemForm__form"}
+                    id={'itemForm'}
+                    className={'itemForm__form'}
                     onSubmit={handleSubmit(
-                        isEditPage() ? updateExistingItem : addNewItem,
-                    )}
-                >
-                    <div className={"itemForm__form__top"}>
+                        isEditPage() ? updateExistingItem : addNewItem
+                    )}>
+                    <div className={'itemForm__form__top'}>
                         <div
-                            className={"itemForm__form__top__dropzone"}
-                            {...getRootProps()}
-                        >
+                            className={'itemForm__form__top__dropzone'}
+                            {...getRootProps()}>
                             <input {...getInputProps()} />
-                            <div className={"itemForm__form__top__dropzone__inside"}>
-                                <RiImageAddFill size={ICON_SIZE} color={ICON_COLOR}/>
+                            <div
+                                className={
+                                    'itemForm__form__top__dropzone__inside'
+                                }>
+                                <RiImageAddFill
+                                    size={ICON_SIZE}
+                                    color={ICON_COLOR}
+                                />
                                 {isDragActive ? (
                                     <div>Drop the files here ...</div>
                                 ) : (
                                     <div>
-                                        Click to select an asset or drag and drop in this area
+                                        Click to select an asset or drag and
+                                        drop in this area
                                     </div>
                                 )}
                             </div>
                         </div>
-                        <div className={"itemForm__form__top__input"}>
+                        <div className={'itemForm__form__top__input'}>
                             <div>
-                                <label>{type !== "about us" ? "Title" : "Moto"}</label>
+                                <label>
+                                    {type !== 'about us' ? 'Title' : 'Moto'}
+                                </label>
                                 <input
                                     disabled={isSubmitting}
                                     placeholder={
-                                        type !== "about us"
-                                            ? "Enter title"
-                                            : "Enter you company moto"
+                                        type !== 'about us'
+                                            ? 'Enter title'
+                                            : 'Enter you company moto'
                                     }
                                     {...titleRegisterProps}
                                 />
-                                {"title" in errors && errors.title?.message && (
-                                    <div className="text-danger">{errors.title.message}</div>
+                                {'title' in errors && errors.title?.message && (
+                                    <div className="text-danger">
+                                        {errors.title.message}
+                                    </div>
                                 )}
-                                {"moto" in errors && errors.moto?.message && (
-                                    <div className="text-danger">{errors.moto.message}</div>
+                                {'moto' in errors && errors.moto?.message && (
+                                    <div className="text-danger">
+                                        {errors.moto.message}
+                                    </div>
                                 )}
                             </div>
-                            {"titleImage" in errors && errors.titleImage?.message && (
+                            {'titleImage' in errors &&
+                                errors.titleImage?.message && (
+                                    <div className="text-danger">
+                                        Molimo odaberite jednu sliku kao title
+                                    </div>
+                                )}
+                            {errors.root && (
                                 <div className="text-danger">
-                                    Molimo odaberite jednu sliku kao title
+                                    {errors.root.message}
                                 </div>
                             )}
-                            {errors.root && (
-                                <div className="text-danger">{errors.root.message}</div>
-                            )}
-                            {type === "beaches" && (
+                            {type === 'beaches' && (
                                 <div>
                                     <label>Terrain type</label>
-                                    <select disabled={isSubmitting} {...register("terrainType")}>
+                                    <select
+                                        disabled={isSubmitting}
+                                        {...register('terrainType')}>
                                         <option value="gravel">Gravel</option>
                                         <option value="sand">Sand</option>
                                     </select>
-                                    {"terrainType" in errors && errors.terrainType?.message && (
-                                        <div className="text-danger">
-                                            {errors.terrainType.message}
-                                        </div>
-                                    )}
+                                    {'terrainType' in errors &&
+                                        errors.terrainType?.message && (
+                                            <div className="text-danger">
+                                                {errors.terrainType.message}
+                                            </div>
+                                        )}
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    <div className={"itemForm__form__bottom"}>
-                        <div className={"itemForm__form__bottom__images"}>
+                    <div className={'itemForm__form__bottom'}>
+                        <div className={'itemForm__form__bottom__images'}>
                             {files?.length !== 0 &&
                                 files?.map((file, index) => {
                                     return (
                                         <div
                                             key={index}
-                                            className={"itemForm__form__bottom__images__container"}
-                                        >
+                                            className={
+                                                'itemForm__form__bottom__images__container'
+                                            }>
                                             <img
                                                 src={URL.createObjectURL(file)}
                                                 width="auto"
@@ -601,26 +634,37 @@ const NewItemPage = ({type}: IProps) => {
                                             />
                                             <button
                                                 className={
-                                                    "itemForm__form__bottom__images__container__delete"
+                                                    'itemForm__form__bottom__images__container__delete'
                                                 }
-                                                type={"button"}
+                                                type={'button'}
                                                 disabled={isSubmitting}
                                                 onClick={() =>
                                                     setFiles(
-                                                        files.filter((stateFile) => stateFile !== file),
+                                                        files.filter(
+                                                            (stateFile) =>
+                                                                stateFile !==
+                                                                file
+                                                        )
                                                     )
-                                                }
-                                            >
+                                                }>
                                                 Remove
                                             </button>
                                             <button
                                                 className={
-                                                    "itemForm__form__bottom__images__container__titleImage"
+                                                    'itemForm__form__bottom__images__container__titleImage'
                                                 }
-                                                type={"button"}
-                                                disabled={isSubmitting || watch("titleImage") === index}
-                                                onClick={() => setValue("titleImage", index)}
-                                            >
+                                                type={'button'}
+                                                disabled={
+                                                    isSubmitting ||
+                                                    watch('titleImage') ===
+                                                        index
+                                                }
+                                                onClick={() =>
+                                                    setValue(
+                                                        'titleImage',
+                                                        index
+                                                    )
+                                                }>
                                                 Title Image
                                             </button>
                                         </div>
@@ -632,8 +676,9 @@ const NewItemPage = ({type}: IProps) => {
                                     return (
                                         <div
                                             key={imgUrl}
-                                            className={"itemForm__form__bottom__images__container"}
-                                        >
+                                            className={
+                                                'itemForm__form__bottom__images__container'
+                                            }>
                                             <img
                                                 src={formatImageUrl(imgUrl)}
                                                 alt={formatImageUrl(imgUrl)}
@@ -642,105 +687,133 @@ const NewItemPage = ({type}: IProps) => {
                                             />
                                             <button
                                                 className={
-                                                    "itemForm__form__bottom__images__container__delete"
+                                                    'itemForm__form__bottom__images__container__delete'
                                                 }
-                                                type={"button"}
+                                                type={'button'}
                                                 disabled={isSubmitting}
-                                                onClick={() => deleteImageFromStorage(imgUrl)}
-                                            >
+                                                onClick={() =>
+                                                    deleteImageFromStorage(
+                                                        imgUrl
+                                                    )
+                                                }>
                                                 Remove
                                             </button>
                                             <button
                                                 className={
-                                                    "itemForm__form__bottom__images__container__titleImage"
+                                                    'itemForm__form__bottom__images__container__titleImage'
                                                 }
-                                                type={"button"}
+                                                type={'button'}
                                                 disabled={
-                                                    isSubmitting || watch("titleImage") === imgUrl
+                                                    isSubmitting ||
+                                                    watch('titleImage') ===
+                                                        imgUrl
                                                 }
-                                                onClick={() => setValue("titleImage", imgUrl)}
-                                            >
+                                                onClick={() =>
+                                                    setValue(
+                                                        'titleImage',
+                                                        imgUrl
+                                                    )
+                                                }>
                                                 Title Image
                                             </button>
                                         </div>
                                     );
                                 })}
                         </div>
-                        <div className={"itemForm__form__bottom__input"}>
-                            <label>{type !== "about us" ? "Description" : "About Us"}</label>
+                        <div className={'itemForm__form__bottom__input'}>
+                            <label>
+                                {type !== 'about us'
+                                    ? 'Description'
+                                    : 'About Us'}
+                            </label>
                             <textarea
                                 rows={10}
                                 disabled={isSubmitting}
                                 placeholder={
-                                    type !== "about us"
-                                        ? "Enter your description here..."
-                                        : "About Us"
+                                    type !== 'about us'
+                                        ? 'Enter your description here...'
+                                        : 'About Us'
                                 }
                                 {...textareaRegisterProps}
                             />
-                            {"description" in errors && errors.description && (
-                                <div className="text-danger">{errors.description.message}</div>
+                            {'description' in errors && errors.description && (
+                                <div className="text-danger">
+                                    {errors.description.message}
+                                </div>
                             )}
-                            {"aboutUs" in errors && errors.aboutUs && (
-                                <div className="text-danger">{errors.aboutUs.message}</div>
+                            {'aboutUs' in errors && errors.aboutUs && (
+                                <div className="text-danger">
+                                    {errors.aboutUs.message}
+                                </div>
                             )}
                         </div>
 
-                        {type === "restaurants" && (
+                        {type === 'restaurants' && (
                             <>
-                                <div className={"itemForm__form__bottom__input"}>
-                                    <label htmlFor={"rating"}>Rating</label>
+                                <div
+                                    className={'itemForm__form__bottom__input'}>
+                                    <label htmlFor={'rating'}>Rating</label>
                                     <input
-                                        id={"rating"}
+                                        id={'rating'}
                                         type="number"
                                         placeholder="From 1 to 5 how many stars restaurant has"
                                         disabled={isSubmitting}
                                         step={0.1}
-                                        {...register("review")}
+                                        {...register('review')}
                                     />
-                                    {"review" in errors && errors.review?.message && (
-                                        <div className="text-danger">{errors.review.message}</div>
-                                    )}
+                                    {'review' in errors &&
+                                        errors.review?.message && (
+                                            <div className="text-danger">
+                                                {errors.review.message}
+                                            </div>
+                                        )}
                                 </div>
-                                <div className={"itemForm__form__bottom__input"}>
-                                    <label htmlFor={"reviews"}>Number of Reviews</label>
+                                <div
+                                    className={'itemForm__form__bottom__input'}>
+                                    <label htmlFor={'reviews'}>
+                                        Number of Reviews
+                                    </label>
                                     <input
-                                        id={"reviews"}
+                                        id={'reviews'}
                                         disabled={isSubmitting}
                                         type="number"
                                         placeholder="Number of reviews"
-                                        {...register("reviewAmount")}
+                                        {...register('reviewAmount')}
                                     />
-                                    {"reviewAmount" in errors && errors.reviewAmount?.message && (
-                                        <div className="text-danger">
-                                            {errors.reviewAmount.message}
-                                        </div>
-                                    )}
+                                    {'reviewAmount' in errors &&
+                                        errors.reviewAmount?.message && (
+                                            <div className="text-danger">
+                                                {errors.reviewAmount.message}
+                                            </div>
+                                        )}
                                 </div>
-                                <div className={"itemForm__form__bottom__input"}>
+                                <div
+                                    className={'itemForm__form__bottom__input'}>
                                     <label>Email</label>
                                     <input
                                         disabled={isSubmitting}
                                         type="email"
                                         placeholder="Email"
-                                        {...register("emailContact")}
+                                        {...register('emailContact')}
                                     />
 
-                                    {"emailContact" in errors && errors.emailContact?.message && (
-                                        <div className="text-danger">
-                                            {errors.emailContact?.message}
-                                        </div>
-                                    )}
+                                    {'emailContact' in errors &&
+                                        errors.emailContact?.message && (
+                                            <div className="text-danger">
+                                                {errors.emailContact?.message}
+                                            </div>
+                                        )}
                                 </div>
-                                <div className={"itemForm__form__bottom__input"}>
+                                <div
+                                    className={'itemForm__form__bottom__input'}>
                                     <label>Phone Number</label>
                                     <input
                                         disabled={isSubmitting}
                                         type="string"
                                         placeholder="Phone number"
-                                        {...register("phoneContact")}
+                                        {...register('phoneContact')}
                                     />
-                                    {"phoneContact" in errors &&
+                                    {'phoneContact' in errors &&
                                         errors?.phoneContact?.message && (
                                             <div className="text-danger">
                                                 {errors?.phoneContact?.message}
@@ -750,26 +823,31 @@ const NewItemPage = ({type}: IProps) => {
                             </>
                         )}
 
-                        {type !== "devices" && type !== "about us" && (
-                            <div className={"itemForm__form__bottom__input"}>
+                        {type !== 'devices' && type !== 'about us' && (
+                            <div className={'itemForm__form__bottom__input'}>
                                 <label>Location</label>
-                                <div style={{height: "300px", width: "100%"}}>
+                                <div style={{ height: '300px', width: '100%' }}>
                                     {isLoaded && (
                                         <GoogleMap
-                                            mapContainerStyle={{height: "300px", width: "100%"}}
-                                            center={{lat: watch("lat"), lng: watch("lng")}}
+                                            mapContainerStyle={{
+                                                height: '300px',
+                                                width: '100%',
+                                            }}
+                                            center={{
+                                                lat: watch('lat'),
+                                                lng: watch('lng'),
+                                            }}
                                             mapTypeId="satellite"
                                             zoom={13}
                                             options={{
                                                 streetViewControl: false,
                                                 fullscreenControl: false,
                                             }}
-                                            onClick={handleMapClick}
-                                        >
+                                            onClick={handleMapClick}>
                                             <MarkerF
                                                 position={{
-                                                    lat: watch("lat"),
-                                                    lng: watch("lng"),
+                                                    lat: watch('lat'),
+                                                    lng: watch('lng'),
                                                 }}
                                             />
                                         </GoogleMap>
@@ -779,28 +857,36 @@ const NewItemPage = ({type}: IProps) => {
                         )}
                     </div>
                 </form>
-                {type !== "about us" && (
-                    <div className={"itemForm__locale"}>
+                {type !== 'about us' && (
+                    <div className={'itemForm__locale'}>
                         {!isEditPage() ? (
                             <>
-                                <div className={"itemForm__locale__title"}>
+                                <div className={'itemForm__locale__title'}>
                                     Add already existing {type}
                                 </div>
                                 {otherAttractions?.length !== 0 ? (
                                     otherAttractions?.map((attraction) => {
                                         return (
                                             <div
-                                                className={"itemForm__locale__add"}
-                                                key={handleId(type, attraction)}
-                                            >
+                                                className={
+                                                    'itemForm__locale__add'
+                                                }
+                                                key={handleId(
+                                                    type,
+                                                    attraction
+                                                )}>
                                                 <div>{attraction.title}</div>
                                                 <button
-                                                    type={"button"}
+                                                    type={'button'}
                                                     onClick={() =>
-                                                        addExistingItem(handleId(type, attraction))
-                                                    }
-                                                >
-                                                    <FaPlus/>
+                                                        addExistingItem(
+                                                            handleId(
+                                                                type,
+                                                                attraction
+                                                            )
+                                                        )
+                                                    }>
+                                                    <FaPlus />
                                                     Add
                                                 </button>
                                             </div>
@@ -812,25 +898,48 @@ const NewItemPage = ({type}: IProps) => {
                             </>
                         ) : (
                             <>
-                                <div className={"itemForm__locale__title"}>Information</div>
-                                <div className={"itemForm__locale__row"}>
-                  <span className={"itemForm__locale__row__desc"}>
-                    Last updated
-                  </span>
-                                    <span className={"itemForm__locale__row__value"}>
-                    {formatDateString(editData?.updatedAt?.toString() ?? "")}
-                  </span>
+                                <div className={'itemForm__locale__title'}>
+                                    Information
                                 </div>
-                                {editData && "apartments" in editData ? (
-                                    <div className={"itemForm__locale__row"}>
-                    <span className={"itemForm__locale__row__desc"}>
-                      Displayed in apartments
-                    </span>
-                                        <span className={"itemForm__locale__row__value"}>
-                      {editData.apartments?.map((apartment) => {
-                          return <div>{apartment.name}</div>;
-                      })}
-                    </span>
+                                <div className={'itemForm__locale__row'}>
+                                    <span
+                                        className={
+                                            'itemForm__locale__row__desc'
+                                        }>
+                                        Last updated
+                                    </span>
+                                    <span
+                                        className={
+                                            'itemForm__locale__row__value'
+                                        }>
+                                        {formatDateString(
+                                            editData?.updatedAt?.toString() ??
+                                                ''
+                                        )}
+                                    </span>
+                                </div>
+                                {editData && 'apartments' in editData ? (
+                                    <div className={'itemForm__locale__row'}>
+                                        <span
+                                            className={
+                                                'itemForm__locale__row__desc'
+                                            }>
+                                            Displayed in apartments
+                                        </span>
+                                        <span
+                                            className={
+                                                'itemForm__locale__row__value'
+                                            }>
+                                            {editData.apartments?.map(
+                                                (apartment) => {
+                                                    return (
+                                                        <div>
+                                                            {apartment.name}
+                                                        </div>
+                                                    );
+                                                }
+                                            )}
+                                        </span>
                                     </div>
                                 ) : (
                                     <div></div>
