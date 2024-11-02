@@ -502,6 +502,15 @@ const NewItemPage = ({ type }: IProps) => {
                 attractionId: id,
                 apartmentId: apartmentId,
             });
+            toast.success(`Added successfully`, {
+                position: 'top-center',
+                autoClose: TOAST_CLOSE_TIME_MS,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         } catch (e) {
             console.log(e);
         }
